@@ -1,0 +1,19 @@
+﻿<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Chess" type="Uproject" factoryName="rider.uproject">
+    <option name="PROJECT_FILE_PATH" value="" />
+    <configuration_2>
+      <option name="CONFIGURATION" value="Development Editor" />
+      <option name="PLATFORM" value="Win64" />
+      <option name="EXECUTABLE_PATH" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="MANDATORY_PROGRAM_PARAMETERS" value="" />
+      <option name="CUSTOM_PROGRAM_PARAMETERS" value="" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="TERMINAL_INTERACTION_BEHAVIOR" value="AUTO_DETECT" />
+    </configuration_2>
+    <method v="2">
+      <option name="Build" />
+    </method>
+  </configuration>
+</component>
