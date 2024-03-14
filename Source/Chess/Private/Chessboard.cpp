@@ -78,7 +78,7 @@ void AChessboard::GenerateField()
 			TileArray.Add(Obj);
 			TileMap.Add(FVector2D(x, y), Obj);
 
-			if ((x == 0 && y == 4)||(x == 7 && y == 4) || (x == 7 && y == 3) || (x == 0 && y == 3) || (x == 0 && y == 1) || (x == 0 && y == 6) || (x == 7 && y == 1) || (x == 7 && y == 6) || x==1 || x==6)
+			if ((x == 0 && y == 4)||(x == 7 && y == 4) || (x == 7 && y == 3) || (x == 0 && y == 3) || (x == 0 && y == 1) || (x == 0 && y == 6) || (x == 7 && y == 1) || (x == 7 && y == 6) || x==1 || x==6 || (x == 0 && y == 0) || (x == 0 && y == 7) || (x == 7 && y == 0) || (x == 7 && y == 7) || (x == 0 && y == 2) || (x == 0 && y == 5) || (x == 7 && y == 2) || (x == 7 && y == 5))
 			{
 				GeneratePiece(x, y);	
 			}
@@ -243,8 +243,83 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+	}
+
+	else if (x == 0 && (y == 0 || y == 7))
+	{
+		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+		FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
+		Position.Z = 5;
+		//FRotator Rotation = FRotator(0, 90, 0);
+		APiece* PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
+
+		const float PawnScale = TileSize / 110.0f;;
+		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+		PieceObj->SetGridPosition(x, y);
+
+		// Applica la rotazione dopo che l'oggetto è stato creato con successo
+		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+		PieceObj->AddActorLocalRotation(Rotation);
+	}
+	else if (x == 7 && (y == 0 || y == 7))
+	{
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/RookMat.RookMat")));
+
+		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+		FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
+		Position.Z = 5;
+		//FRotator Rotation = FRotator(0, 90, 0);
+		APiece* PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
+		//cambio colore per il re nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+
+		const float PawnScale = TileSize / 110.0f;;
+		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+		PieceObj->SetGridPosition(x, y);
+
+		// Applica la rotazione dopo che l'oggetto è stato creato con successo
+		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+		PieceObj->AddActorLocalRotation(Rotation);
 		}
 
+	else if (x == 0 && (y == 2 || y == 5))
+	{
+		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+		FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
+		Position.Z = 5;
+		//FRotator Rotation = FRotator(0, 90, 0);
+		APiece* PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
+
+		const float PawnScale = TileSize / 110.0f;;
+		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+		PieceObj->SetGridPosition(x, y);
+
+		// Applica la rotazione dopo che l'oggetto è stato creato con successo
+		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+		PieceObj->AddActorLocalRotation(Rotation);
+	}
+	else if (x == 7 && (y == 2 || y == 5))
+	{
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/BishopMat.BishopMat")));
+
+		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+		FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
+		Position.Z = 5;
+		//FRotator Rotation = FRotator(0, 90, 0);
+		APiece* PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
+		//cambio colore per il re nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+
+		const float PawnScale = TileSize / 110.0f;;
+		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+		PieceObj->SetGridPosition(x, y);
+
+		// Applica la rotazione dopo che l'oggetto è stato creato con successo
+		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+		PieceObj->AddActorLocalRotation(Rotation);
+	}
 }
 
 FVector2D AChessboard::GetTilePosition(const FHitResult& Hit)

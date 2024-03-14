@@ -17,7 +17,6 @@ AHorse::AHorse()
 		Material = MaterialFinder.Object;
 	}
 
-	// Supponiamo che 'MeshComponent' sia il tuo UStaticMeshComponent
 	UMaterialInterface* Materiale = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/HorseMatW.HorseMatW"));
 	if (Materiale)
 	{

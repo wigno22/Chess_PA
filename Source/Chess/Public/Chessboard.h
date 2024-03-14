@@ -8,6 +8,8 @@
 #include "King.h"
 #include "Horse.h"
 #include "PawnPed.h"
+#include "Rook.h"
+#include "Bishop.h"
 #include "GameFramework/Actor.h"
 #include "Chessboard.generated.h"
 

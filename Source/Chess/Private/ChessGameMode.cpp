@@ -41,7 +41,7 @@ void AChessGameMode::BeginPlay()
 
 	float CameraPosX = ((GField->TileSize * (FieldSize + ((FieldSize - 1) * GField->NormalizedCellPadding) - (FieldSize - 1))) / 2) - (GField->TileSize / 2);
 	//float CameraPosX = ((120 * (8 + ((8 - 1) ) - (8 - 1))) / 2) - (120 / 2);
-	FVector CameraPos(CameraPosX, CameraPosX, 900.0f);
+	FVector CameraPos(CameraPosX, CameraPosX, 1000.0f);
 	HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
 
 	// Human player = 0

@@ -19,7 +19,6 @@ AKing::AKing()
 		Material = MaterialFinder.Object;
 	}
 
-	// Supponiamo che 'MeshComponent' sia il tuo UStaticMeshComponent
 	UMaterialInterface* Materiale = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Materials/KingMatW.KingMatW"));
 	if (Materiale)
 	{
