@@ -3,6 +3,10 @@
 
 #include "HumanPlayer.h"
 #include "Tile.h"
+#include "ChessGameMode.h"
+#include "Components/InputComponent.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 
 // Sets default values
 AHumanPlayer::AHumanPlayer()
@@ -79,6 +83,7 @@ void AHumanPlayer::OnClick()
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
 	if (Hit.bBlockingHit && bIsMyTurn)
 	{
+		//cliccato su tile
 		if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
 		{
 			if (CurrTile->GetTileStatus() == ETileStatus::EMPTY)
@@ -86,11 +91,42 @@ void AHumanPlayer::OnClick()
 				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("clicked"));
 				CurrTile->SetTileStatus(PlayerNumber, ETileStatus::OCCUPIED);
 				FVector SpawnPosition = CurrTile->GetActorLocation();
-				//AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-				//GameMode->SetCellSign(PlayerNumber, SpawnPosition);
-				bIsMyTurn = false;
+				AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+				GameMode->SetCellSign(PlayerNumber, SpawnPosition);
+				//riabilitare per il multiplayer
+				// bIsMyTurn = false;
+				//log in cui mi viene detto quale attore è stato cliccato
+				UE_LOG(LogTemp, Warning, TEXT("Tile clicked %s"), *Hit.GetActor()->GetName());
+
+				//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+				FVector Position = CurrTile->GetActorLocation();
+				Position.Z = 5;
+				//FRotator Rotation = FRotator(0, 90, 0);
+				APiece* PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
+
+				const float PawnScale = 120 / 110.0f;
+				PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+				//PieceObj->SetGridPosition(x, y);
+
+				// Applica la rotazione dopo che l'oggetto è stato creato con successo
+				FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+				PieceObj->AddActorLocalRotation(Rotation);
 			}
 		}
+		/*cliccato su pezzo
+		else if (APiece* CurrPiece = Cast<APiece>(Hit.GetActor()))
+		{
+			if (CurrPiece->GetPieceOwner() == PlayerNumber)
+			{
+				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("clicked"));
+				CurrPiece->SetPieceOwner(PlayerNumber);
+				FVector SpawnPosition = CurrPiece->GetActorLocation();
+				AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+				GameMode->SetCellSign(PlayerNumber, SpawnPosition);
+				bIsMyTurn = false;
+			}
+		}*/
+
 	}
 
 

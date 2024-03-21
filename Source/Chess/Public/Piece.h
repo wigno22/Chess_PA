@@ -36,8 +36,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
 
-	//attributi della classe tile che mi serviranno per generare la pedina
-	// //
 	//size of the board
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 BoardSize;
@@ -46,17 +44,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<APawn> PawnClass;
 
-	/*Tile padding
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float CellPadding;
-
-	//Tile size
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float TileSize;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float NormalizedCellPadding;
-	*/
 
 	//Tile size
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -67,22 +54,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D GridPosition;
 
-	// Definizione di PieceArray e PieceMap
-	TArray<APiece*> PieceArray;
-
-	TMap<FVector2D, APiece*> PieceMap;
+	//tile owner
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 PlayerOwner;
 
 	//Set the position (X,Y)
 	void SetGridPosition(const double Inx, const double Iny);
 
-	//
-	// fine attributi presi da tile 
-
-
-
 	//mi servirà per muovere la pedina
 	virtual void Move(FVector newPosition);
 
+	//dichiaro get e set owner della pedina
+	int32 GetPlayerOwner();
+
+	void SetPlayerOwner(int32 NewOwner);
 
 
 

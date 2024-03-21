@@ -7,6 +7,8 @@
 #include "CoreMinimal.h"
 #include "PlayerInterface.h"
 #include "ChessGameInstance.h"
+#include "Piece.h"
+#include "ChessGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
@@ -32,7 +34,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	//keeps track of turn
-	bool bIsMyTurn = false;
+	bool bIsMyTurn = true;
 
 public:	
 	// Called every frame

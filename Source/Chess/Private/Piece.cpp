@@ -43,14 +43,21 @@ void APiece::BeginPlay()
 
 
 
-
-
-
-
 void APiece::Move(FVector newPosition)
 {
 	position = newPosition;
 }
+
+int32 APiece::GetPlayerOwner()
+{
+	return int32();
+}
+
+void APiece::SetPlayerOwner(int32 NewOwner)
+{
+		PlayerOwner = NewOwner;
+}
+
 
 void APiece::SetGridPosition(const double InX, const double InY)
 {
