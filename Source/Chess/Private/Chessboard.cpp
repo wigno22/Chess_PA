@@ -60,7 +60,10 @@ void AChessboard::GenerateField()
 
 
 			FVector Location = AChessboard::GetRelativeLocationByXYPosition(x, y);
+			Location.Z = 0;
 			ATile* Obj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
+
+
 
 			if ((x+y)%2==0)
 			{

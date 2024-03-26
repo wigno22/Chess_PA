@@ -8,6 +8,7 @@
 #include "PlayerInterface.h"
 #include "ChessGameInstance.h"
 #include "Piece.h"
+#include "Chessboard.h"
 #include "ChessGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Pawn.h"
@@ -28,6 +29,9 @@ public:
 
 	//game instance reference
 	UGameInstance* GameInstance;
+
+	//puntatore a pezzo selezionato
+	APiece* CurrPieceSelected ;
 
 protected:
 	// Called when the game starts or when spawned

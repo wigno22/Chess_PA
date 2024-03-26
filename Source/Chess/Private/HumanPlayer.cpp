@@ -4,6 +4,9 @@
 #include "HumanPlayer.h"
 #include "Tile.h"
 #include "ChessGameMode.h"
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
+#include "DrawDebugHelpers.h"
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -16,6 +19,8 @@ AHumanPlayer::AHumanPlayer()
 
 	//Set this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
+
+
 
 	//create camera component
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -88,44 +93,36 @@ void AHumanPlayer::OnClick()
 		{
 			if (CurrTile->GetTileStatus() == ETileStatus::EMPTY)
 			{
-				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("clicked"));
-				CurrTile->SetTileStatus(PlayerNumber, ETileStatus::OCCUPIED);
-				FVector SpawnPosition = CurrTile->GetActorLocation();
-				AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-				GameMode->SetCellSign(PlayerNumber, SpawnPosition);
-				//riabilitare per il multiplayer
-				// bIsMyTurn = false;
-				//log in cui mi viene detto quale attore è stato cliccato
-				UE_LOG(LogTemp, Warning, TEXT("Tile clicked %s"), *Hit.GetActor()->GetName());
-
+				
 				//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
 				FVector Position = CurrTile->GetActorLocation();
 				Position.Z = 5;
-				//FRotator Rotation = FRotator(0, 90, 0);
-				APiece* PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
 
-				const float PawnScale = 120 / 110.0f;
-				PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
-				//PieceObj->SetGridPosition(x, y);
+				CurrPieceSelected->SetActorLocation(Position);
 
-				// Applica la rotazione dopo che l'oggetto è stato creato con successo
-				FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
-				PieceObj->AddActorLocalRotation(Rotation);
+
 			}
 		}
-		/*cliccato su pezzo
+		//cliccato su pezzo
 		else if (APiece* CurrPiece = Cast<APiece>(Hit.GetActor()))
 		{
-			if (CurrPiece->GetPieceOwner() == PlayerNumber)
-			{
-				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("clicked"));
-				CurrPiece->SetPieceOwner(PlayerNumber);
-				FVector SpawnPosition = CurrPiece->GetActorLocation();
-				AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-				GameMode->SetCellSign(PlayerNumber, SpawnPosition);
-				bIsMyTurn = false;
-			}
-		}*/
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Cliccato Pedone"));
+
+			CurrPieceSelected = CurrPiece;
+
+			
+
+			ATile* TilePedone = Cast<ATile>(Hit.GetActor());
+
+			//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+			FVector Location = CurrPiece->GetActorLocation();
+			Location.Z = 4.940656458412e-324;
+			UWorld* World = GetWorld();
+
+			TArray<FOverlapResult> OverlappingActors;
+			World -> OverlapMultiByObjectType(OverlappingActors, Location , FQuat::Identity, FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn), FCollisionShape::MakeSphere(100.0f));
+			
+		}
 
 	}
 
