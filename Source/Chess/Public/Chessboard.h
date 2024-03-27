@@ -66,7 +66,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface* BlackMaterial;
 
+	//Attributo per la posizione della pedina selezionata
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FVector2D TileAttiva;
 
+	//Metodo per le mosse legali a cui passo la posizione della pedina selezionata
+	void LegalMoves();
+
+	//metodo per resettare mosse legali
+	void ResetLegalMoves();
 
 	//Called when an instance of this class is placed (in editor) or spawned
 	virtual void OnConstruction(const FTransform& Transform) override;

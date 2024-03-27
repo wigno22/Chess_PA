@@ -23,6 +23,9 @@ public:
 	// Sets default values for this actor's properties
 	ATile();
 
+	bool bIsValid;
+
+
 	// The tile's status
 	void SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus);
 

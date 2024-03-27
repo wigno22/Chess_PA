@@ -61,6 +61,9 @@ public:
 	//Set the position (X,Y)
 	void SetGridPosition(const double Inx, const double Iny);
 
+	//Get the position (X,Y)
+	FVector2D GetGridPosition();
+
 	//mi servirà per muovere la pedina
 	virtual void Move(FVector newPosition);
 

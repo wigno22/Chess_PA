@@ -3,7 +3,6 @@
 
 #include "HumanPlayer.h"
 #include "Tile.h"
-#include "ChessGameMode.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "DrawDebugHelpers.h"
@@ -82,6 +81,8 @@ void AHumanPlayer::OnLose()
 */
 void AHumanPlayer::OnClick()
 {
+	//prendo attributi gamemode qui per usarli nei due if
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	//Structure containing information about one hit of a trace, such as point of impact and surface normal at that point
 	FHitResult Hit = FHitResult(ForceInit);
 	// GetHitResultUnderCursor function sends a ray from the mouse position and gives the corresponding hit results
@@ -98,9 +99,35 @@ void AHumanPlayer::OnClick()
 				FVector Position = CurrTile->GetActorLocation();
 				Position.Z = 5;
 
-				CurrPieceSelected->SetActorLocation(Position);
+				//salvo posizione della pedina da passare alla cheesboard
+				FVector2D PositionXY = CurrTile->GetGridPosition();
 
 
+				//controllo se la posizione è valida
+				//booleano che mi dice se la posizione è valida
+				//passo alla cheesboard per controllare
+
+				if (CurrTile->bIsValid == true)
+				{
+					if (CurrTile->GetTileOwner() == 1)
+					{
+					//stampo messaggio di debug
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Avversario Mangiato"));
+					}
+					else
+					{
+						CurrPieceSelected->SetActorLocation(Position);
+					}
+					
+
+					//cambiare turno di gioco
+
+				}
+				//devo resettare la memoria delle mosse valide
+				GameMode->GField->ResetLegalMoves();
+
+
+				
 			}
 		}
 		//cliccato su pezzo
@@ -112,16 +139,21 @@ void AHumanPlayer::OnClick()
 
 			
 
-			ATile* TilePedone = Cast<ATile>(Hit.GetActor());
+			GameMode->GField->TileAttiva = CurrPiece->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+			
+			GameMode->GField->LegalMoves();
 
-			//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+
+
+			/*salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+			 ATile* TilePedone = Cast<ATile>(Hit.GetActor());
 			FVector Location = CurrPiece->GetActorLocation();
 			Location.Z = 4.940656458412e-324;
 			UWorld* World = GetWorld();
 
 			TArray<FOverlapResult> OverlappingActors;
 			World -> OverlapMultiByObjectType(OverlappingActors, Location , FQuat::Identity, FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn), FCollisionShape::MakeSphere(100.0f));
-			
+			*/
 		}
 
 	}

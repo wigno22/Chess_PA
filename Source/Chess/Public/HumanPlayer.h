@@ -8,7 +8,7 @@
 #include "PlayerInterface.h"
 #include "ChessGameInstance.h"
 #include "Piece.h"
-#include "Chessboard.h"
+
 #include "ChessGameMode.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Pawn.h"

@@ -20,6 +20,50 @@ AChessboard::AChessboard()
 
 }
 
+void AChessboard::LegalMoves()
+{
+	for (int i=0; i<8; i++)
+	{
+	FVector2D PositionLegalMoves =	TileAttiva + FVector2D(i, 0);
+		if (PositionLegalMoves.X<8)
+		{
+			//controllo se la tile è vuota, se occupata controllo se il pezzo è mio o dell' avversario
+			int32 ProprietarioTile = (*TileMap.Find(PositionLegalMoves))->GetTileOwner();
+			if (ProprietarioTile == 0)
+			{
+				(*TileMap.Find(PositionLegalMoves))->bIsValid = false;
+				break;
+			}
+
+			else if (ProprietarioTile == 1)
+			{
+				(*TileMap.Find(PositionLegalMoves))->bIsValid = true;
+				
+			}
+
+			else if (ProprietarioTile == -1)
+			{
+				(*TileMap.Find(PositionLegalMoves))->bIsValid = true;
+				
+			}
+
+			
+			
+		}
+	
+	}
+	
+
+}
+
+void AChessboard::ResetLegalMoves()
+{
+	for (ATile* Obj : TileArray)
+	{
+		Obj->bIsValid = false;
+	}
+}
+
 void AChessboard::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);

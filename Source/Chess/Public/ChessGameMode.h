@@ -11,6 +11,7 @@
 #include "ChessGameMode.generated.h"
 
 class AActor;
+class AChessboard;
 
 struct FPosition;
 
@@ -32,7 +33,7 @@ public:
 	int32 MoveCounter;
 
 	// TSubclassOf is a template class that provides UClass type safety.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AChessboard> ChessboardClass;
 
 
