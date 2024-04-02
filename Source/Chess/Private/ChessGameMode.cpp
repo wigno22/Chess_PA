@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ChessGameMode.h"
+#include "Chessboard.h"
 #include "ChessPlayerController.h"
 #include "HumanPlayer.h"
 #include "RandomPlayer.h"

@@ -7,8 +7,6 @@
 #include "Queen.h"
 #include "King.h"
 #include "Horse.h"
-#include "PawnPed.h"
-#include "Rook.h"
 #include "Bishop.h"
 #include "GameFramework/Actor.h"
 #include "Chessboard.generated.h"
@@ -23,6 +21,11 @@ class CHESS_API AChessboard : public AActor
 	GENERATED_BODY()
 	
 public:	
+
+	int32 GloXC = 7;
+	int32 GloXG = 7;
+
+
 	// Sets default values for this actor's properties
 	AChessboard();
 
@@ -66,12 +69,22 @@ public:
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface* BlackMaterial;
 
+	UPROPERTY(EditAnywhere)
+	UMaterialInterface* GreenMaterial;
+
+	UPROPERTY(EditAnywhere)
+	UMaterialInterface* RedMaterial;
+
+
 	//Attributo per la posizione della pedina selezionata
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D TileAttiva;
 
 	//Metodo per le mosse legali a cui passo la posizione della pedina selezionata
-	void LegalMoves();
+	void ColorLegalMoves(TArray<FVector2D> MosseLegali);
+
+	//metodo per fare la mossa
+	void DoMove(FVector2D PosInit, FVector2D PosFin);
 
 	//metodo per resettare mosse legali
 	void ResetLegalMoves();
@@ -117,5 +130,8 @@ protected:
 public:	
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override;
+
+
+
 
 };

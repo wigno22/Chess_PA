@@ -9,6 +9,7 @@
 #include "Components/InputComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include <Rook.h>
 
 // Sets default values
 AHumanPlayer::AHumanPlayer()
@@ -18,8 +19,6 @@ AHumanPlayer::AHumanPlayer()
 
 	//Set this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-
-
 
 	//create camera component
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -92,68 +91,76 @@ void AHumanPlayer::OnClick()
 		//cliccato su tile
 		if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
 		{
-			if (CurrTile->GetTileStatus() == ETileStatus::EMPTY)
-			{
-				
-				//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
-				FVector Position = CurrTile->GetActorLocation();
-				Position.Z = 5;
+			
 
-				//salvo posizione della pedina da passare alla cheesboard
-				FVector2D PositionXY = CurrTile->GetGridPosition();
-
-
-				//controllo se la posizione è valida
-				//booleano che mi dice se la posizione è valida
-				//passo alla cheesboard per controllare
-
-				if (CurrTile->bIsValid == true)
+				//Primo Click
+				if (CurrTile->GetTileOwner() == 0 )
 				{
-					if (CurrTile->GetTileOwner() == 1)
-					{
-					//stampo messaggio di debug
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Avversario Mangiato"));
-					}
-					else
-					{
-						CurrPieceSelected->SetActorLocation(Position);
-					}
-					
-
-					//cambiare turno di gioco
+					//devo resettare la memoria delle mosse valide
+					GameMode->GField->ResetLegalMoves();
+					//ho la mia tile, prenderò la pedina corrisspondente e guarderò le legalmoves
+					APiece* Piece = CurrTile->GetPiece();
+					TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Cast<ATile>(Hit.GetActor()));
+					GameMode->GField->TileAttiva = CurrTile->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+					GameMode->GField->ColorLegalMoves(Mosselegali);
 
 				}
-				//devo resettare la memoria delle mosse valide
-				GameMode->GField->ResetLegalMoves();
+				//Secondo Click
+				else
+				{
+					//ho una tile che non appartiene a me ed è valida, devo fare la mossa
+					if (CurrTile->bIsValid== true)
+					{					
+					GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition());
 
 
-				
-			}
+					//voglio resettare le mosse valide
+					GameMode->GField->ResetLegalMoves();
+					}
+				    
+				}
+			
 		}
-		//cliccato su pezzo
+
+		 
 		else if (APiece* CurrPiece = Cast<APiece>(Hit.GetActor()))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Cliccato Pedone"));
+
+			FVector2D PosPedina =  CurrPiece->GetGridPosition();
+			ATile* FoundTile = nullptr;
+
+
+			if (*GameMode->GField->TileMap.Find(PosPedina))
+			{
+				FoundTile = *GameMode->GField->TileMap.Find(PosPedina);
+			
+
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Trovata"));
+			}
+
+
+
+
+
+		/*	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Cliccato Pedone"));
 
 			CurrPieceSelected = CurrPiece;
-
-			
-
+						
 			GameMode->GField->TileAttiva = CurrPiece->GetGridPosition(); //mi restituisce coppia di coordinate x,y
 			
-			GameMode->GField->LegalMoves();
 
 
+			if (CurrPiece-> GetOwner() == 0 )
+			{
+				GameMode->GField->LegalMoves();
 
-			/*salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
-			 ATile* TilePedone = Cast<ATile>(Hit.GetActor());
-			FVector Location = CurrPiece->GetActorLocation();
-			Location.Z = 4.940656458412e-324;
-			UWorld* World = GetWorld();
+				//chiamo DoMove per eseguire la mossa
+				GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrPiece->GetGridPosition());
 
-			TArray<FOverlapResult> OverlappingActors;
-			World -> OverlapMultiByObjectType(OverlappingActors, Location , FQuat::Identity, FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn), FCollisionShape::MakeSphere(100.0f));
-			*/
+				//cambiare turno di gioco
+			}
+*/
+			
 		}
 
 	}

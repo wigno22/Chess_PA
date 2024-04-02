@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+class APiece;
 
 UENUM()
 enum class ETileStatus : uint8
@@ -35,6 +37,9 @@ public:
 	//get the tile's owner
 	int32 GetTileOwner();
 
+	//get the Piece on the Tile
+	APiece* GetPiece();
+
 	//Set the position (X,Y)
 	void SetGridPosition(const double Inx, const double Iny);
 
@@ -63,6 +68,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D GridPosition;
 
+	//attributo per tenere conto del pezzo presente sulla tile
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	APiece* Piece;
 
 public:	
 	// Called every frame

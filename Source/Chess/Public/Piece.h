@@ -72,7 +72,7 @@ public:
 
 	void SetPlayerOwner(int32 NewOwner);
 
-
+	virtual TArray<FVector2D> CalculateMoves(ATile* CurrTile);
 
 	UFUNCTION()
 	void SelfDestroy();

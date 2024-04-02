@@ -1,8 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
-#pragma once
 
 #include "CoreMinimal.h"
 #include "PlayerInterface.h"
@@ -31,6 +29,7 @@ public:
 	int32 CurrentPlayer;
 	// tracks the number of moves in order to signal a drawn game
 	int32 MoveCounter;
+		
 
 	// TSubclassOf is a template class that provides UClass type safety.
 	UPROPERTY(EditDefaultsOnly)

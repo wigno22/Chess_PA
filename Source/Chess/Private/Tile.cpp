@@ -3,6 +3,7 @@
 
 #include "Tile.h"
 
+
 // Sets default values
 ATile::ATile()
 {
@@ -44,6 +45,11 @@ int32 ATile::GetTileOwner()
 void ATile::SetGridPosition(const double InX, const double InY)
 {
 	GridPosition.Set(InX, InY);
+}
+
+APiece* ATile::GetPiece()
+{
+    return Piece;
 }
 
 FVector2D ATile::GetGridPosition()

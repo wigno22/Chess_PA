@@ -3,6 +3,8 @@
 //#include "BaseSign.h"
 #include "Chessboard.h"
 #include "Kismet/GameplayStatics.h"
+#include <Rook.h>
+
 
 
 // Sets default values
@@ -20,39 +22,24 @@ AChessboard::AChessboard()
 
 }
 
-void AChessboard::LegalMoves()
+void AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali)
 {
-	for (int i=0; i<8; i++)
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	
+	//ciclo per colorare le mosse legali
+	for (int i=0; i<MosseLegali.Num(); i++)
 	{
-	FVector2D PositionLegalMoves =	TileAttiva + FVector2D(i, 0);
-		if (PositionLegalMoves.X<8)
+		int32 ProprietarioTile = (*TileMap.Find(MosseLegali[i]))->GetTileOwner();
+
+		(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, GreenMaterial);
+		
+		if (ProprietarioTile != -1 && ProprietarioTile != GameMode->CurrentPlayer)
 		{
-			//controllo se la tile è vuota, se occupata controllo se il pezzo è mio o dell' avversario
-			int32 ProprietarioTile = (*TileMap.Find(PositionLegalMoves))->GetTileOwner();
-			if (ProprietarioTile == 0)
-			{
-				(*TileMap.Find(PositionLegalMoves))->bIsValid = false;
-				break;
-			}
-
-			else if (ProprietarioTile == 1)
-			{
-				(*TileMap.Find(PositionLegalMoves))->bIsValid = true;
-				
-			}
-
-			else if (ProprietarioTile == -1)
-			{
-				(*TileMap.Find(PositionLegalMoves))->bIsValid = true;
-				
-			}
-
-			
-			
+			(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, RedMaterial);
 		}
-	
+
 	}
-	
+
 
 }
 
@@ -61,8 +48,86 @@ void AChessboard::ResetLegalMoves()
 	for (ATile* Obj : TileArray)
 	{
 		Obj->bIsValid = false;
+		FVector2D Position = Obj->GetGridPosition();
+		int32 x = static_cast<int32>(Position.X);
+		int32 y = static_cast<int32>(Position.Y);
+
+		//resetto colore tile
+		if ((x + y) % 2 == 0)
+		{
+			Obj->StaticMeshComponent->SetMaterial(0, WhiteMaterial);
+		}
+		else
+		{
+			Obj->StaticMeshComponent->SetMaterial(0, BlackMaterial);
+		}
 	}
 }
+
+//funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
+void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin)
+{
+	//prendo il pezzo nella posizione iniziale e lo sposto nella posizione finale
+	//poi metto la posizione iniziale a vuota e la posizione finale occupata
+
+
+	APiece* PieceFin = (*TileMap.Find(PosFin))->GetPiece();
+	 
+
+
+	if ((*TileMap.Find(PosFin))->GetTileOwner() != (*TileMap.Find(PosInit))->GetTileOwner())
+	{
+		if ((*TileMap.Find(PosFin))->GetTileOwner() == 1)
+		{
+			
+			PieceFin->SetGridPosition(GloXC, -3 );
+			
+
+			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXC, -3);
+			GloXC = GloXC - 1;
+			Position.Z = 5;
+			PieceFin->SetActorLocation(Position);
+
+
+
+		}
+		else if ((*TileMap.Find(PosFin))->GetTileOwner() == 0)
+		{
+			
+			PieceFin->SetGridPosition(GloXG, +10);
+			
+
+
+			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXG, +10);
+			Position.Z = 5;
+			GloXG = GloXG - 1;
+			PieceFin->SetActorLocation(Position);
+		}
+	}
+
+
+
+	
+
+	APiece* Piece = (*TileMap.Find(PosInit))->GetPiece();
+	Piece->SetGridPosition(PosFin.X, PosFin.Y);
+	FVector Position = AChessboard::GetRelativeLocationByXYPosition(PosFin.X, PosFin.Y);
+	Position.Z = 5;
+	Piece->SetActorLocation(Position);
+
+	// sistemo attributi della tile iniziale e finale 
+	(*TileMap.Find(PosFin))->Piece = Piece;
+	(*TileMap.Find(PosInit))->Piece = nullptr;
+
+	(*TileMap.Find(PosFin))->SetTileStatus(0, ETileStatus::OCCUPIED);
+	(*TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
+
+	
+
+	ResetLegalMoves();
+}
+
+
 
 void AChessboard::OnConstruction(const FTransform& Transform)
 {
@@ -119,6 +184,8 @@ void AChessboard::GenerateField()
 			Obj->StaticMeshComponent->SetMaterial(0, BlackMaterial);
 			}
 
+			Obj->Piece = nullptr;
+
 			const float TileScale = TileSize / 100;
 			Obj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
 			Obj->SetGridPosition(x, y);
@@ -135,11 +202,12 @@ void AChessboard::GenerateField()
 		}
 	}
 
-	//GeneratePiece (0, 4);
 }
 
 void AChessboard::GeneratePiece(int32 x, int32 y)
 {
+	const float PawnScale = TileSize / 180.0f;
+
 	if (x == 0 && y == 4)
 	{
 		
@@ -149,13 +217,17 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		//FRotator Rotation = FRotator(0, 90, 0);
 		APiece* PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
 
-		const float PawnScale = TileSize / 110.0f;
+		
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(0, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 
 	else if (x == 7 && y == 4)
@@ -171,13 +243,16 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D (x,y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
+
 	}
 
 	else if (x == 0 && y == 3)
@@ -188,13 +263,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		//FRotator Rotation = FRotator(0, 90, 0);
 		APiece* PieceObj = GetWorld()->SpawnActor<AQueen>(AQueen::StaticClass(), Position, FRotator::ZeroRotator);
 	
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(0, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 	else if (x == 7 && y == 3)
 	{
@@ -209,13 +286,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 	else if (x == 0 && (y == 1 || y == 6))
 	{
@@ -225,13 +304,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		//FRotator Rotation = FRotator(0, 90, 0);
 		APiece* PieceObj = GetWorld()->SpawnActor<AHorse>(AHorse::StaticClass(), Position, FRotator::ZeroRotator);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(0, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 	else if (x == 7 && (y == 1 || y == 6))
 	{
@@ -246,15 +327,17 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
-	else if (x == 1)
+	/*else if (x == 1)
 	{
 		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
 		FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
@@ -262,13 +345,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		//FRotator Rotation = FRotator(0, 90, 0);
 		APiece* PieceObj = GetWorld()->SpawnActor<APawnPed>(APawnPed::StaticClass(), Position, FRotator::ZeroRotator);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(0, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 	else if (x == 6)
 	{
@@ -283,15 +368,17 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
-	}
 
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
+	}
+	*/
 	else if (x == 0 && (y == 0 || y == 7))
 	{
 		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
@@ -300,13 +387,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		//FRotator Rotation = FRotator(0, 90, 0);
 		APiece* PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(0, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 	else if (x == 7 && (y == 0 || y == 7))
 	{
@@ -321,13 +410,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 		}
 
 	else if (x == 0 && (y == 2 || y == 5))
@@ -338,13 +429,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		//FRotator Rotation = FRotator(0, 90, 0);
 		APiece* PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(0, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 	else if (x == 7 && (y == 2 || y == 5))
 	{
@@ -359,13 +452,15 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 
-		const float PawnScale = TileSize / 110.0f;;
 		PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 		PieceObj->SetGridPosition(x, y);
 
 		// Applica la rotazione dopo che l'oggetto è stato creato con successo
 		FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
 		PieceObj->AddActorLocalRotation(Rotation);
+
+		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
+		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
 }
 

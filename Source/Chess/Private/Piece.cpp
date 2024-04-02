@@ -58,6 +58,11 @@ void APiece::SetPlayerOwner(int32 NewOwner)
 		PlayerOwner = NewOwner;
 }
 
+TArray<FVector2D> APiece::CalculateMoves(ATile* CurrTile)
+{
+	return TArray<FVector2D>();
+}
+
 
 void APiece::SetGridPosition(const double InX, const double InY)
 {
