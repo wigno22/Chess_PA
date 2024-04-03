@@ -38,33 +38,41 @@ void AKing::BeginPlay()
 }
 
 
-
-
-/*void AKing::Move(FVector newPosition)
+TArray<FVector2D> AKing::CalculateMoves(ATile* CurrTile)
 {
-	
-	// Verifica che la mossa sia valida
-	if (FVector::Dist(position, newPosition) <= 1) {
-		position = newPosition;
-	}
-	else {
-		// Gestisci il caso in cui la mossa non è valida
-	}
-}*/
+    AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
+    // Inizializziamo l'array delle mosse legali
+    TArray<FVector2D> LegalMoves;
 
+    // Definiamo le direzioni possibili per il re: sopra, sotto, a sinistra, a destra e diagonali
+    const TArray<FVector2D> Directions = {
+        FVector2D(1, 0), FVector2D(-1, 0), FVector2D(0, 1), FVector2D(0, -1),
+        FVector2D(1, 1), FVector2D(1, -1), FVector2D(-1, 1), FVector2D(-1, -1)
+    };
 
-/* Called every frame
-void AKing::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+    // Per ogni direzione possibile
+    for (const FVector2D& Direction : Directions)
+    {
+        // Calcoliamo la posizione della mossa legale
+        FVector2D PositionLegalMove = CurrTile->GetGridPosition() + Direction;
 
+        // Verifichiamo se la posizione è valida (all'interno della scacchiera)
+        if (PositionLegalMove.X >= 0 && PositionLegalMove.X < 8 &&
+            PositionLegalMove.Y >= 0 && PositionLegalMove.Y < 8)
+        {
+            // Controllo se la tile è vuota o occupata da un pezzo
+            int32 ProprietarioTile = (*GameMode->GField->TileMap.Find(PositionLegalMove))->GetTileOwner();
+            if (ProprietarioTile == -1 || ProprietarioTile == 1)
+            {
+                // La tile è vuota o occupata da un pezzo avversario, quindi la mossa è valida
+                (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
+                LegalMoves.Add(PositionLegalMove);
+            }
+        }
+    }
+
+    // Restituiamo l'array delle mosse legali
+    return LegalMoves;
 }
-
-// Called to bind functionality to input
-void AKing::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}*/
 

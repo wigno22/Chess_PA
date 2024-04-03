@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Piece.h"
 #include "GameFramework/Pawn.h"
-
+#include "ChessGameMode.h"
 #include "Bishop.generated.h"
 
 /**
@@ -24,4 +24,5 @@ public:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual TArray<FVector2D> CalculateMoves(ATile* CurrTile) override;
 };

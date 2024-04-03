@@ -4,10 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Tile.h"
-#include "Queen.h"
-#include "King.h"
-#include "Horse.h"
-#include "Bishop.h"
 #include "GameFramework/Actor.h"
 #include "Chessboard.generated.h"
 
@@ -121,7 +117,7 @@ public:
 	inline bool IsValidPosition(const FVector2D Position) const;
 
 	// get a line given a begin and end positions
-	TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
+	//TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
 
 protected:
 	// Called when the game starts or when spawned

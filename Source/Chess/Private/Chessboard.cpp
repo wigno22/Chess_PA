@@ -4,7 +4,11 @@
 #include "Chessboard.h"
 #include "Kismet/GameplayStatics.h"
 #include <Rook.h>
-
+#include <Horse.h>
+#include <Bishop.h>
+#include <King.h>
+#include <Queen.h>
+#include <PawnPed.h>
 
 
 // Sets default values
@@ -337,7 +341,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
 		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
-	/*else if (x == 1)
+	else if (x == 1)
 	{
 		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
 		FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
@@ -378,7 +382,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(1, ETileStatus::OCCUPIED);
 		(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 	}
-	*/
+	
 	else if (x == 0 && (y == 0 || y == 7))
 	{
 		//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
@@ -492,7 +496,7 @@ inline bool AChessboard::IsValidPosition(const FVector2D Position) const
 	return 0 <= Position[0] && Position[0] < BoardSize && 0 <= Position[1] && Position[1] < BoardSize;
 }
 
-TArray<int32> AChessboard::GetLine(const FVector2D Begin, const FVector2D End) const
+/*TArray<int32> AChessboard::GetLine(const FVector2D Begin, const FVector2D End) const
 {
 	int32 xSign;
 	if (Begin[0] == End[0])
@@ -527,7 +531,7 @@ TArray<int32> AChessboard::GetLine(const FVector2D Begin, const FVector2D End) c
 	return Line;
 }
 
-/* Called every frame
+ Called every frame
 void AChessboard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

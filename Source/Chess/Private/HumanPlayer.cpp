@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include <Rook.h>
+#include <Horse.h>
 
 // Sets default values
 AHumanPlayer::AHumanPlayer()
@@ -98,7 +99,7 @@ void AHumanPlayer::OnClick()
 				{
 					//devo resettare la memoria delle mosse valide
 					GameMode->GField->ResetLegalMoves();
-					//ho la mia tile, prenderò la pedina corrisspondente e guarderò le legalmoves
+					//ho la mia tile, prenderò la pedina corrispondente e guarderò le legalmoves
 					APiece* Piece = CurrTile->GetPiece();
 					TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Cast<ATile>(Hit.GetActor()));
 					GameMode->GField->TileAttiva = CurrTile->GetGridPosition(); //mi restituisce coppia di coordinate x,y
@@ -128,7 +129,9 @@ void AHumanPlayer::OnClick()
 
 			FVector2D PosPedina =  CurrPiece->GetGridPosition();
 			ATile* FoundTile = nullptr;
-
+			//
+			//DEVO CAPIRE COME TROVARE LA TILES CORRISPONDENTE ALLA PEDINA
+			//
 
 			if (*GameMode->GField->TileMap.Find(PosPedina))
 			{
