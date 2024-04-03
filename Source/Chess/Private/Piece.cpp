@@ -64,6 +64,16 @@ TArray<FVector2D> APiece::CalculateMoves(ATile* CurrTile)
 }
 
 
+ATile* APiece::GetTile()
+{
+	return CurrentTile;
+}
+
+void APiece::SetCurrentTile(ATile* NewTile)
+{
+		CurrentTile = NewTile;
+}
+
 void APiece::SetGridPosition(const double InX, const double InY)
 {
 	GridPosition.Set(InX, InY);

@@ -35,68 +35,99 @@ void APawnPed::BeginPlay()
 
 TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
 {
+    INT32 MossaVert = 1;
+
+    ////
     AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
     // Inizializziamo l'array delle mosse legali
     TArray<FVector2D> LegalMoves;
 
-    // Otteniamo la posizione attuale del pedone
-    FVector2D PawnPosition = CurrTile->GetGridPosition();
+    // Definiamo le direzioni possibili per la torre: sopra, sotto, a sinistra e a destra
+    const FVector2D Direction = { FVector2D(1, 0) };
 
-    // Definiamo la direzione in cui il pedone si muove in base al colore
-    int ForwardDirection = 1;
     int32 Player = CurrTile->GetTileOwner();
 
-    if (Player == 1)
-	{
-         ForwardDirection = -1;
-	}
-	
-
-    // Movimento diretto in avanti
-    FVector2D ForwardMove = FVector2D(ForwardDirection, 0);
-    FVector2D ForwardTwoMoves = ForwardMove * 2;
-
-    // Verifichiamo se il pedone può muoversi in avanti di una o due caselle
-    if ((CurrTile->GetGridPosition().X == 1 && CurrTile->GetTileOwner()==0) || (CurrTile->GetGridPosition().X == 6 && CurrTile->GetTileOwner() == 1))
-    {
-        // Movimento di due caselle in avanti consentito solo dalla posizione iniziale
-        FVector2D TwoMovesPosition = PawnPosition + ForwardTwoMoves;
-        //devo verificare se la casella davanati è vuota
-        FVector2D NextTilePosition = CurrTile->GetGridPosition() + ForwardMove;
-        //
-        // 
-        // DEVO VERIFICARE SE LA CASA DAVANTI E' VUOTA
-        // NON SO COME RECUPERARE LA TILE DALLA POSIZIONE
-        // 
-        // 
-        //ATile* NextTile = GameMode->GField->GetRelativeLocationByXYPosition(NextTilePosition);
 
 
-        if ( CurrTile->GetTileStatus() == ETileStatus::EMPTY)
+    // Per ogni direzione possibile
+    
+        if ((CurrTile->GetGridPosition().X == 1 && Player == 0) || (CurrTile->GetGridPosition().X == 6 && Player == 1))
         {
-            LegalMoves.Add(TwoMovesPosition);
+	        MossaVert = 2;
         }
-    }
-
-    // Movimento di una casella in avanti
-    FVector2D OneMovePosition = PawnPosition + ForwardMove;
-    if (CurrTile->GetTileStatus() == ETileStatus::EMPTY)
-    {
-        LegalMoves.Add(OneMovePosition);
-    }
-
-    // Movimento diagonale per catturare un pezzo avversario
-    for (int32 DiagonalOffset : {-1, 1})
-    {
-        FVector2D DiagonalMove = FVector2D(DiagonalOffset, ForwardDirection);
-        FVector2D DiagonalPosition = PawnPosition + DiagonalMove;
-        if (CurrTile->GetTileStatus() == ETileStatus::EMPTY && CurrTile->GetTileOwner() != PlayerOwner )
+        else
         {
-            LegalMoves.Add(DiagonalPosition);
+            MossaVert = 1;
         }
-    }
+        
 
-    // Restituiamo l'array delle mosse legali
-    return LegalMoves;
+        // Per ogni passo possibile in quella direzione
+        for (int i = 1; i <= MossaVert; i++)
+        {
+            if ((CurrTile->GetGridPosition().Y - 1)>=0 && CurrTile->GetGridPosition().X + 1<8)
+            {
+                ATile* TileSX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + 1, CurrTile->GetGridPosition().Y - 1));
+
+                    if (TileSX->GetTileOwner() == 1)
+                    {
+                        (*GameMode->GField->TileMap.Find(TileSX->GetGridPosition()))->bIsValid = true;
+                        LegalMoves.Add(TileSX->GetGridPosition());
+                    }
+            }
+		
+            
+            if ((CurrTile->GetGridPosition().Y + 1) < 8  && CurrTile->GetGridPosition().X + 1 < 8)
+            {
+                ATile* TileDX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + 1, CurrTile->GetGridPosition().Y + 1));
+
+                if (TileDX->GetTileOwner() == 1)
+                {
+                    (*GameMode->GField->TileMap.Find(TileDX->GetGridPosition()))->bIsValid = true;
+                    LegalMoves.Add(TileDX->GetGridPosition());
+                }
+            }
+            
+
+           
+           
+
+   
+
+
+            // Calcoliamo la posizione della mossa legale
+            FVector2D PositionLegalMove = CurrTile->GetGridPosition() + Direction * i;
+
+
+            // Verifichiamo se la posizione è valida (all'interno della scacchiera)
+            if (PositionLegalMove.X >= 0 && PositionLegalMove.X < 8 &&
+                PositionLegalMove.Y >= 0 && PositionLegalMove.Y < 8)
+            {
+                // Controllo se la tile è vuota o occupata da un pezzo
+                int32 ProprietarioTile = (*GameMode->GField->TileMap.Find(PositionLegalMove))->GetTileOwner();
+                if (ProprietarioTile == -1)
+                {
+                    // La tile è vuota, quindi la mossa è valida
+                    (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
+                    LegalMoves.Add(PositionLegalMove);
+                }
+                else 
+                {
+
+                    break;
+                }
+ 
+            }
+            else
+            {
+                // Se la posizione è fuori dalla scacchiera, non possiamo muoverci oltre in questa direzione
+                break;
+            }
+        }
+    
+
+        // Restituiamo l'array delle mosse legali
+        return LegalMoves;
+
+   
 }

@@ -53,4 +53,6 @@ public:
 	//called on left mouse click
 	UFUNCTION()
 	void OnClick();
+
+	void OnClickPers(ATile* CurrTile);
 };

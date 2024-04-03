@@ -9,6 +9,8 @@
 #include "Piece.generated.h"
 
 UCLASS()
+
+//class ATile;
 class CHESS_API APiece : public APawn
 {
 	GENERATED_BODY()
@@ -57,6 +59,15 @@ public:
 	//tile owner
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 PlayerOwner;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ATile* CurrentTile;
+
+	//Get the tile where the piece is
+	ATile* GetTile();
+
+	//Set the tile where the piece is
+	void SetCurrentTile(ATile* NewTile);
 
 	//Set the position (X,Y)
 	void SetGridPosition(const double Inx, const double Iny);

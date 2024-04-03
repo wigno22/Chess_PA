@@ -116,6 +116,8 @@ public:
 	// checking if is a valid field position
 	inline bool IsValidPosition(const FVector2D Position) const;
 
+	ATile* GetTileAtPosition(const FVector2D& Position) const;
+
 	// get a line given a begin and end positions
 	//TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
 

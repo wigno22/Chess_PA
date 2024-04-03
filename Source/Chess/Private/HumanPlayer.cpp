@@ -10,7 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include <Rook.h>
-#include <Horse.h>
+#include <Horse.h> 
 
 // Sets default values
 AHumanPlayer::AHumanPlayer()
@@ -81,8 +81,12 @@ void AHumanPlayer::OnLose()
 */
 void AHumanPlayer::OnClick()
 {
+	
+	Super::BeginPlay();
+ 	 
 	//prendo attributi gamemode qui per usarli nei due if
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
 	//Structure containing information about one hit of a trace, such as point of impact and surface normal at that point
 	FHitResult Hit = FHitResult(ForceInit);
 	// GetHitResultUnderCursor function sends a ray from the mouse position and gives the corresponding hit results
@@ -92,77 +96,17 @@ void AHumanPlayer::OnClick()
 		//cliccato su tile
 		if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
 		{
-			
+			AHumanPlayer::OnClickPers(CurrTile);
 
-				//Primo Click
-				if (CurrTile->GetTileOwner() == 0 )
-				{
-					//devo resettare la memoria delle mosse valide
-					GameMode->GField->ResetLegalMoves();
-					//ho la mia tile, prenderò la pedina corrispondente e guarderò le legalmoves
-					APiece* Piece = CurrTile->GetPiece();
-					TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Cast<ATile>(Hit.GetActor()));
-					GameMode->GField->TileAttiva = CurrTile->GetGridPosition(); //mi restituisce coppia di coordinate x,y
-					GameMode->GField->ColorLegalMoves(Mosselegali);
-
-				}
-				//Secondo Click
-				else
-				{
-					//ho una tile che non appartiene a me ed è valida, devo fare la mossa
-					if (CurrTile->bIsValid== true)
-					{					
-					GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition());
-
-
-					//voglio resettare le mosse valide
-					GameMode->GField->ResetLegalMoves();
-					}
-				    
-				}
-			
 		}
 
 		 
 		else if (APiece* CurrPiece = Cast<APiece>(Hit.GetActor()))
 		{
 
-			FVector2D PosPedina =  CurrPiece->GetGridPosition();
-			ATile* FoundTile = nullptr;
-			//
-			//DEVO CAPIRE COME TROVARE LA TILES CORRISPONDENTE ALLA PEDINA
-			//
-
-			if (*GameMode->GField->TileMap.Find(PosPedina))
-			{
-				FoundTile = *GameMode->GField->TileMap.Find(PosPedina);
-			
-
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Trovata"));
-			}
-
-
-
-
-
-		/*	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("Cliccato Pedone"));
-
-			CurrPieceSelected = CurrPiece;
-						
-			GameMode->GField->TileAttiva = CurrPiece->GetGridPosition(); //mi restituisce coppia di coordinate x,y
-			
-
-
-			if (CurrPiece-> GetOwner() == 0 )
-			{
-				GameMode->GField->LegalMoves();
-
-				//chiamo DoMove per eseguire la mossa
-				GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrPiece->GetGridPosition());
-
-				//cambiare turno di gioco
-			}
-*/
+		 
+			AHumanPlayer::OnClickPers(CurrPiece->GetTile());
+		 
 			
 		}
 
@@ -170,4 +114,46 @@ void AHumanPlayer::OnClick()
 
 
 }
+
+void AHumanPlayer::OnClickPers(ATile* CurrTile)
+{
+	
+	//prendo attributi gamemode qui per usarli nei due if
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	//Structure containing information about one hit of a trace, such as point of impact and surface normal at that point
+	FHitResult Hit = FHitResult(ForceInit);
+	// GetHitResultUnderCursor function sends a ray from the mouse position and gives the corresponding hit results
+	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
+
+	
+
+	//Primo Click
+	if (CurrTile->GetTileOwner() == 0)
+	{
+		//devo resettare la memoria delle mosse valide
+		GameMode->GField->ResetLegalMoves();
+		//ho la mia tile, prenderò la pedina corrispondente e guarderò le legalmoves
+		APiece* Piece = CurrTile->GetPiece();
+		TArray<FVector2D> Mosselegali = Piece->CalculateMoves(CurrTile);
+		GameMode->GField->TileAttiva = CurrTile->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+		GameMode->GField->ColorLegalMoves(Mosselegali);
+
+	}
+	//Secondo Click
+	else
+	{
+		//ho una tile che non appartiene a me ed è valida, devo fare la mossa
+		if (CurrTile->bIsValid == true)
+		{
+			GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition());
+
+
+			//voglio resettare le mosse valide
+			GameMode->GField->ResetLegalMoves();
+		}
+
+	}
+
+		}
 
