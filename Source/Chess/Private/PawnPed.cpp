@@ -42,12 +42,17 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
 
     // Inizializziamo l'array delle mosse legali
     TArray<FVector2D> LegalMoves;
+    int32 Player = CurrTile->GetTileOwner();
+    int32 Direzione = 1;
 
     // Definiamo le direzioni possibili per la torre: sopra, sotto, a sinistra e a destra
-    const FVector2D Direction = { FVector2D(1, 0) };
-
-    int32 Player = CurrTile->GetTileOwner();
-
+    if (Player != 0)
+    {
+       
+        Direzione = -1;
+    }
+    const FVector2D Direction = { FVector2D(Direzione, 0) };
+   
 
 
     // Per ogni direzione possibile
@@ -67,7 +72,7 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
         {
             if ((CurrTile->GetGridPosition().Y - 1)>=0 && CurrTile->GetGridPosition().X + 1<8)
             {
-                ATile* TileSX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + 1, CurrTile->GetGridPosition().Y - 1));
+                ATile* TileSX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + Direzione, CurrTile->GetGridPosition().Y - 1));
 
                     if (TileSX->GetTileOwner() == 1)
                     {
@@ -79,7 +84,7 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
             
             if ((CurrTile->GetGridPosition().Y + 1) < 8  && CurrTile->GetGridPosition().X + 1 < 8)
             {
-                ATile* TileDX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + 1, CurrTile->GetGridPosition().Y + 1));
+                ATile* TileDX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + Direzione, CurrTile->GetGridPosition().Y + 1));
 
                 if (TileDX->GetTileOwner() == 1)
                 {

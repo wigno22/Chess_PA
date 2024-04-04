@@ -1,7 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "RandomPlayer.h"
+#include "EnhancedInputSubsystems.h"
+#include "Components/InputComponent.h"
+#include "EnhancedInputComponent.h"
+#include <Piece.h>
+#include <HumanPlayer.h>
 
 // Sets default values
 ARandomPlayer::ARandomPlayer()
@@ -32,3 +36,58 @@ void ARandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 }
 
+void ARandomPlayer::OnTurn()
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	UE_LOG(LogTemp, Warning, TEXT("Random Player Turn"));
+
+
+	TArray <APiece*> BlackPiece;
+
+	//riempo l'array delle pedine nere scorrendo la tilemap e sulle tile con owner 1 aggiungo la pedina
+
+	GiocatoreAI();
+   
+
+	GameMode->bIsMyTurn = true;
+}
+
+
+
+void ARandomPlayer::GiocatoreAI()
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	RilevaPezzi();
+	SimulaMosse();
+}
+
+void ARandomPlayer::RilevaPezzi()
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	for (auto& CurrTile : GameMode->GField->GetTileArray())
+	{
+		if (CurrTile->GetTileOwner() == 1)
+		{
+			PezziAI.Add(CurrTile->GetPiece());
+		}
+	}
+
+}
+
+void ARandomPlayer::SimulaMosse()
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	for (APiece* Piece : PezziAI)
+	{
+
+		TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
+		GameMode->GField->TileAttiva = Piece->GetTile()->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+		GameMode->GField->ColorLegalMoves(Mosselegali);
+
+	}
+	
+}

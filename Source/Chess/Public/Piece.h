@@ -63,6 +63,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ATile* CurrentTile;
 
+	UPROPERTY (VisibleAnywhere, BlueprintReadOnly)
+	int32 Weight;
+
+	int32 GetWeight();
+
+	void SetWeight(int32 NewWeight);
+
 	//Get the tile where the piece is
 	ATile* GetTile();
 

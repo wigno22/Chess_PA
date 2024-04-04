@@ -55,14 +55,16 @@ void AHumanPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 }
 
-/*
+
 void AHumanPlayer::OnTurn()
 {
-		bIsMyTurn = true;
+		AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+		GameMode->bIsMyTurn = true;
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("My Turn"));
 	//	GameInstance->SetTurnMessage(TEXT("Your Turn"));
 }
 
+/*
 
 void AHumanPlayer::OnWin()
 {
@@ -79,11 +81,11 @@ void AHumanPlayer::OnLose()
 }
 
 */
-void AHumanPlayer::OnClick()
+
+
+void AHumanPlayer::EseguiMossaUman()
 {
-	
-	Super::BeginPlay();
- 	 
+	 
 	//prendo attributi gamemode qui per usarli nei due if
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
@@ -91,7 +93,7 @@ void AHumanPlayer::OnClick()
 	FHitResult Hit = FHitResult(ForceInit);
 	// GetHitResultUnderCursor function sends a ray from the mouse position and gives the corresponding hit results
 	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECollisionChannel::ECC_Pawn, true, Hit);
-	if (Hit.bBlockingHit && bIsMyTurn)
+	if (Hit.bBlockingHit && GameMode->bIsMyTurn)
 	{
 		//cliccato su tile
 		if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
@@ -100,19 +102,30 @@ void AHumanPlayer::OnClick()
 
 		}
 
-		 
+
 		else if (APiece* CurrPiece = Cast<APiece>(Hit.GetActor()))
 		{
 
-		 
+
 			AHumanPlayer::OnClickPers(CurrPiece->GetTile());
-		 
-			
+
+
 		}
 
 	}
+	
+}
+void AHumanPlayer::OnClick()
+{
+	Super::BeginPlay();
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
+	AHumanPlayer::EseguiMossaUman();
 
+	
+	
+
+	
 }
 
 void AHumanPlayer::OnClickPers(ATile* CurrTile)
@@ -147,13 +160,22 @@ void AHumanPlayer::OnClickPers(ATile* CurrTile)
 		if (CurrTile->bIsValid == true)
 		{
 			GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition());
-
-
 			//voglio resettare le mosse valide
 			GameMode->GField->ResetLegalMoves();
+
+			
+
+			
+
+			GameMode->bIsMyTurn = false;
+
+			//cambio turno
+			GameMode->TurnNextPlayer();
+
+
+
 		}
 
 	}
 
-		}
-
+}

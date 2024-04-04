@@ -64,6 +64,16 @@ TArray<FVector2D> APiece::CalculateMoves(ATile* CurrTile)
 }
 
 
+int32 APiece::GetWeight()
+{
+	return Weight;
+}
+
+void APiece::SetWeight(int32 NewWeight)
+{
+	Weight = NewWeight;
+}
+
 ATile* APiece::GetTile()
 {
 	return CurrentTile;

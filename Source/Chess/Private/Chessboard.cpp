@@ -223,7 +223,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 
 		PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
-
+		PieceObj->SetWeight(50);
 	}
 
 	else if (x == 7 && y == 4)
@@ -236,7 +236,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		
+		PieceObj->SetWeight(50);
 
 	}
 
@@ -244,7 +244,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 	{
 
 		PieceObj = GetWorld()->SpawnActor<AQueen>(AQueen::StaticClass(), Position, FRotator::ZeroRotator);
-	
+		PieceObj->SetWeight(40);
 	
 	}
 	else if (x == 7 && y == 3)
@@ -256,13 +256,13 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		
+		PieceObj->SetWeight(40);
 	}
 	else if (x == 0 && (y == 1 || y == 6))
 	{
 
 		PieceObj = GetWorld()->SpawnActor<AHorse>(AHorse::StaticClass(), Position, FRotator::ZeroRotator);
-				
+		PieceObj->SetWeight(20);
 	}
 	else if (x == 7 && (y == 1 || y == 6))
 	{
@@ -273,13 +273,13 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		
+		PieceObj->SetWeight(20);
 	}
 	else if (x == 1)
 	{
 
 		PieceObj = GetWorld()->SpawnActor<APawnPed>(APawnPed::StaticClass(), Position, FRotator::ZeroRotator);
-		
+		PieceObj->SetWeight(10);
 	}
 	else if (x == 6)
 	{
@@ -290,13 +290,13 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		
+		PieceObj->SetWeight(10);
 	}
 	
 	else if (x == 0 && (y == 0 || y == 7))
 	{
 		PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
-
+		PieceObj->SetWeight(20);
 	}
 	else if (x == 7 && (y == 0 || y == 7))
 	{
@@ -307,14 +307,14 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-
+		PieceObj->SetWeight(20);
 		}
 
 	else if (x == 0 && (y == 2 || y == 5))
 	{
 
 		PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
-
+		PieceObj->SetWeight(30);
 	}
 	else if (x == 7 && (y == 2 || y == 5))
 	{
@@ -325,7 +325,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-
+		PieceObj->SetWeight(30);
 	}
 
 	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));

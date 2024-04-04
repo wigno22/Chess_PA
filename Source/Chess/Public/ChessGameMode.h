@@ -29,7 +29,9 @@ public:
 	int32 CurrentPlayer;
 	// tracks the number of moves in order to signal a drawn game
 	int32 MoveCounter;
-		
+	
+	//keeps track of turn
+	bool bIsMyTurn = true;
 
 	// TSubclassOf is a template class that provides UClass type safety.
 	UPROPERTY(EditDefaultsOnly)
@@ -44,12 +46,6 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	AChessboard* GField;
 
-	/*UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AActor> SignXActor;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AActor> SignOActor;
-	*/
 	AChessGameMode();
 
 	// Called when the game starts or when spawned
@@ -57,9 +53,6 @@ public:
 
 	// called at the start of the game
 	void ChoosePlayerAndStartGame();
-
-	// set the cell sign and the position 
-	void SetCellSign(const int32 PlayerNumber, const FVector& SpawnPosition);
 
 	// get the next player index
 	int32 GetNextPlayer(int32 Player);

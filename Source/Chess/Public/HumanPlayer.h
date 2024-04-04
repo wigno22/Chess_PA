@@ -32,12 +32,13 @@ public:
 	//puntatore a pezzo selezionato
 	APiece* CurrPieceSelected ;
 
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	//keeps track of turn
-	bool bIsMyTurn = true;
+
 
 public:	
 	// Called every frame
@@ -46,13 +47,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void OnTurn() {};
-    void OnWin() {};
-	void OnLose() {};
+	void OnTurn() override;
+	//void OnWin() override;
+	//void OnLose() override;
+
+	void EseguiMossaUman();
 
 	//called on left mouse click
 	UFUNCTION()
 	void OnClick();
 
 	void OnClickPers(ATile* CurrTile);
+
 };
