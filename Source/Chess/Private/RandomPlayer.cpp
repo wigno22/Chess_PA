@@ -6,6 +6,12 @@
 #include "EnhancedInputComponent.h"
 #include <Piece.h>
 #include <HumanPlayer.h>
+#include <GameMapsSettings.h>
+#include <AI/NavigationSystemBase.h>
+
+
+
+
 
 // Sets default values
 ARandomPlayer::ARandomPlayer()
@@ -36,22 +42,7 @@ void ARandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 }
 
-void ARandomPlayer::OnTurn()
-{
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
-	UE_LOG(LogTemp, Warning, TEXT("Random Player Turn"));
-
-
-	TArray <APiece*> BlackPiece;
-
-	//riempo l'array delle pedine nere scorrendo la tilemap e sulle tile con owner 1 aggiungo la pedina
-
-	GiocatoreAI();
-   
-
-	GameMode->bIsMyTurn = true;
-}
 
 
 
@@ -63,9 +54,16 @@ void ARandomPlayer::GiocatoreAI()
 	SimulaMosse();
 }
 
-void ARandomPlayer::RilevaPezzi()
+ //Rilevo tutti i pezzi del computer e li metto in un array per poi simulare le mosse
+TArray<APiece*> ARandomPlayer::RilevaPezzi()
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	while (PezziAI.Num() > 0)
+	{
+		PezziAI.RemoveAt(0); // Rimuovi il primo elemento dall'array
+	}
+
 
 	for (auto& CurrTile : GameMode->GField->GetTileArray())
 	{
@@ -75,6 +73,7 @@ void ARandomPlayer::RilevaPezzi()
 		}
 	}
 
+	return PezziAI;
 }
 
 void ARandomPlayer::SimulaMosse()
@@ -86,8 +85,16 @@ void ARandomPlayer::SimulaMosse()
 
 		TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
 		GameMode->GField->TileAttiva = Piece->GetTile()->GetGridPosition(); //mi restituisce coppia di coordinate x,y
-		GameMode->GField->ColorLegalMoves(Mosselegali);
+
+		ATile* CurrTile = Piece->GetTile();
+
+		if (GameMode->GField->ColorLegalMoves(Mosselegali, CurrTile))
+		{
+			GameMode->CurrentPlayer = 0;
+			break;
+		}
 
 	}
+	GameMode->CurrentPlayer = 0;
 	
 }

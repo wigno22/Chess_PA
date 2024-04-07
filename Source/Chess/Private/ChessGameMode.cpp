@@ -3,9 +3,9 @@
 #include "ChessGameMode.h"
 #include "Chessboard.h"
 #include "ChessPlayerController.h"
-#include "HumanPlayer.h"
-#include "RandomPlayer.h" 
-#include "EngineUtils.h"
+#include "HumanPlayer.h" 
+#include "EngineUtils.h"  
+#include <RandomPlayer.h>
 
 AChessGameMode::AChessGameMode()
 {
@@ -57,8 +57,6 @@ void AChessGameMode::BeginPlay()
 
 	this->ChoosePlayerAndStartGame();
 
-	
-
 }
 
 void AChessGameMode::ChoosePlayerAndStartGame()
@@ -72,11 +70,11 @@ void AChessGameMode::ChoosePlayerAndStartGame()
 		
 	}
 	MoveCounter += 1;
-	Players[CurrentPlayer]->OnTurn();
+	//Players[CurrentPlayer]->OnTurn();
 }
  
 
-int32 AChessGameMode::GetNextPlayer(int32 Player)
+int32 AChessGameMode::GetNextPlayer(int32 Player) 
 {
 	Player++;
 	if (!Players.IsValidIndex(Player))
@@ -86,9 +84,30 @@ int32 AChessGameMode::GetNextPlayer(int32 Player)
 	return Player;
 }
 
-void AChessGameMode::TurnNextPlayer()
+void AChessGameMode::TurnNextPlayer(int32 Player)
 {
+	//prendo attributi gamemode qui per usarli nei due if
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
 	MoveCounter += 1;
-	CurrentPlayer = GetNextPlayer(CurrentPlayer);
-	Players[CurrentPlayer]->OnTurn();
+	CurrentPlayer = Player;
+
+
+	if (CurrentPlayer == 1)
+	{
+		GameMode->bIsMyTurn = true;
+
+
+		TArray<APiece*> PezziAI;
+
+		//cast di random player per poter usare i suoi metodi
+		ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(Players[1]);
+
+		PezziAI= RandomPlayer->RilevaPezzi();
+
+		RandomPlayer->SimulaMosse();
+	}
+	
+	 
 }
+  

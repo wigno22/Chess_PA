@@ -56,33 +56,6 @@ void AHumanPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 }
 
 
-void AHumanPlayer::OnTurn()
-{
-		AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-		GameMode->bIsMyTurn = true;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("My Turn"));
-	//	GameInstance->SetTurnMessage(TEXT("Your Turn"));
-}
-
-/*
-
-void AHumanPlayer::OnWin()
-{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Win"));
-	//	GameInstance->SetTurnMessage(TEXT("You Win"));
-	//	GameInstance->IncrementScoreHumanPlayer();
-}
-
-void AHumanPlayer::OnLose()
-{
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Lose"));
-	//	GameInstance->SetTurnMessage(TEXT("You Lose"));
-}
-
-*/
-
-
 void AHumanPlayer::EseguiMossaUman()
 {
 	 
@@ -97,19 +70,12 @@ void AHumanPlayer::EseguiMossaUman()
 	{
 		//cliccato su tile
 		if (ATile* CurrTile = Cast<ATile>(Hit.GetActor()))
-		{
-			AHumanPlayer::OnClickPers(CurrTile);
-
-		}
-
-
+			{
+				AHumanPlayer::OnClickPers(CurrTile);
+			}
 		else if (APiece* CurrPiece = Cast<APiece>(Hit.GetActor()))
 		{
-
-
 			AHumanPlayer::OnClickPers(CurrPiece->GetTile());
-
-
 		}
 
 	}
@@ -117,15 +83,10 @@ void AHumanPlayer::EseguiMossaUman()
 }
 void AHumanPlayer::OnClick()
 {
-	Super::BeginPlay();
+	//MARCO
+	//Super::BeginPlay();
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-
 	AHumanPlayer::EseguiMossaUman();
-
-	
-	
-
-	
 }
 
 void AHumanPlayer::OnClickPers(ATile* CurrTile)
@@ -150,8 +111,8 @@ void AHumanPlayer::OnClickPers(ATile* CurrTile)
 		APiece* Piece = CurrTile->GetPiece();
 		TArray<FVector2D> Mosselegali = Piece->CalculateMoves(CurrTile);
 		GameMode->GField->TileAttiva = CurrTile->GetGridPosition(); //mi restituisce coppia di coordinate x,y
-		GameMode->GField->ColorLegalMoves(Mosselegali);
-
+		GameMode->GField->ColorLegalMoves(Mosselegali, CurrTile);
+		GameMode->TurnNextPlayer(0);
 	}
 	//Secondo Click
 	else
@@ -159,21 +120,13 @@ void AHumanPlayer::OnClickPers(ATile* CurrTile)
 		//ho una tile che non appartiene a me ed è valida, devo fare la mossa
 		if (CurrTile->bIsValid == true)
 		{
-			GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition());
+
+			GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition(), GameMode->CurrentPlayer);
 			//voglio resettare le mosse valide
 			GameMode->GField->ResetLegalMoves();
-
-			
-
-			
-
 			GameMode->bIsMyTurn = false;
-
-			//cambio turno
-			GameMode->TurnNextPlayer();
-
-
-
+			GameMode->TurnNextPlayer(1);
+		//	GameMode->GField->ResetLegalMoves();
 		}
 
 	}

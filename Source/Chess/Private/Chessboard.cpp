@@ -26,10 +26,10 @@ AChessboard::AChessboard()
 
 }
 
-void AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali)
+bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali  ,ATile* TileDef)
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	
+	 
 	//ciclo per colorare le mosse legali
 	for (int i=0; i<MosseLegali.Num(); i++)
 	{
@@ -40,9 +40,17 @@ void AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali)
 		if (ProprietarioTile != -1 && ProprietarioTile != GameMode->CurrentPlayer)
 		{
 			(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, RedMaterial);
+
+			if (GameMode->CurrentPlayer == 1)
+			{
+				GameMode->GField->DoMove(TileDef->GetGridPosition(), MosseLegali[i], GameMode->CurrentPlayer);
+				ResetLegalMoves();
+				return true;
+			}
 		}
 
 	}
+	return false;
 
 
 }
@@ -69,61 +77,88 @@ void AChessboard::ResetLegalMoves()
 }
 
 //funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
-void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin)
+void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer)
 {
 	//prendo il pezzo nella posizione iniziale e lo sposto nella posizione finale
 	//poi metto la posizione iniziale a vuota e la posizione finale occupata
 
-
 	APiece* PieceFin = (*TileMap.Find(PosFin))->GetPiece();
-	 
+	
+	Spostato Mossa{};
 
-
+	
 	if ((*TileMap.Find(PosFin))->GetTileOwner() != (*TileMap.Find(PosInit))->GetTileOwner())
 	{
+		//aggiorno array che tiene conto dei pezzi mangiati 
+
 		if ((*TileMap.Find(PosFin))->GetTileOwner() == 1)
 		{
-			
-			PieceFin->SetGridPosition(GloXC, -3 );
-			
 
-			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXC, -3);
+			//aggiungo a pezzi mangiati il pezzo mangiato
+			PezziNeriMangiati.Add(PieceFin);
+
+			//prendo il pezzo e lo metto fuori scacchiera
+			PieceFin->SetGridPosition(GloXC, GloYC);
+			
+			if (PezziNeriMangiati.Num() > 8 && GloXC == 0)
+			{
+				GloYC = -4;
+				GloXC = 7;
+			}
+			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXC, GloYC);
 			GloXC = GloXC - 1;
 			Position.Z = 5;
 			PieceFin->SetActorLocation(Position);
 
 
 
+
 		}
 		else if ((*TileMap.Find(PosFin))->GetTileOwner() == 0)
 		{
-			
-			PieceFin->SetGridPosition(GloXG, +10);
-			
+
+			//prendo il pezzo e lo metto fuori scacchiera
+			PieceFin->SetGridPosition(GloXG, GloYG);
+
+			//aggiungo a pezzi mangiati il pezzo mangiato
+			PezziBianchiMangiati.Add(PieceFin);
+
+			if (PezziBianchiMangiati.Num() > 8 && GloXG == 0)
+			{
+				GloYG = 11;
+				GloXG = 7;
+			}
 
 
-			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXG, +10);
+			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXG, GloYG);
 			Position.Z = 5;
+			
 			GloXG = GloXG - 1;
 			PieceFin->SetActorLocation(Position);
 		}
 	}
 
 
-
-	
-
 	APiece* Piece = (*TileMap.Find(PosInit))->GetPiece();
+
+
 	Piece->SetGridPosition(PosFin.X, PosFin.Y);
 	FVector Position = AChessboard::GetRelativeLocationByXYPosition(PosFin.X, PosFin.Y);
 	Position.Z = 5;
 	Piece->SetActorLocation(Position);
 
+	Mossa.PosInit = PosInit;
+	Mossa.PosFin = PosFin;
+	Mossa.Pezzo = Piece;
+
+	// Aggiungi l'oggetto appena creato all'array Mosse
+	Mosse.Add(Mossa);
+
 	// sistemo attributi della tile iniziale e finale 
 	(*TileMap.Find(PosFin))->Piece = Piece;
 	(*TileMap.Find(PosInit))->Piece = nullptr;
 
-	(*TileMap.Find(PosFin))->SetTileStatus(0, ETileStatus::OCCUPIED);
+	(*TileMap.Find(PosFin))->SetTileStatus(CurrentPlayer, ETileStatus::OCCUPIED);
 	(*TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
 
 	Piece->SetCurrentTile((*TileMap.Find(PosFin)));
@@ -386,45 +421,4 @@ ATile* AChessboard::GetTileAtPosition(const FVector2D & Position) const {
 
 
 
-/*TArray<int32> AChessboard::GetLine(const FVector2D Begin, const FVector2D End) const
-{
-	int32 xSign;
-	if (Begin[0] == End[0])
-	{
-		xSign = 0;
-	}
-	else
-	{
-		xSign = Begin[0] < End[0] ? 1 : -1;
-	}
-
-	int32 ySign;
-	if (Begin[1] == End[1])
-	{
-		ySign = 0;
-	}
-	else
-	{
-		ySign = Begin[1] < End[1] ? 1 : -1;
-	}
-
-	TArray<int32> Line;
-	int32 x = Begin[0] - xSign;
-	int32 y = Begin[1] - ySign;
-	do
-	{
-		x += xSign;
-		y += ySign;
-		//Line.Add((TileMap[FVector2D(x, y)])->GetOwner());
-	} while (x != End[0] || y != End[1]);
-
-	return Line;
-}
-
- Called every frame
-void AChessboard::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}*/
 

@@ -37,7 +37,8 @@ void AHorse::BeginPlay()
 TArray<FVector2D> AHorse::CalculateMoves(ATile* CurrTile)
 {
     AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-
+   
+    int32 Player = CurrTile->GetTileOwner();
     // Inizializziamo l'array delle mosse legali
     TArray<FVector2D> LegalMoves;
 
@@ -67,12 +68,12 @@ TArray<FVector2D> AHorse::CalculateMoves(ATile* CurrTile)
                 (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
                 LegalMoves.Add(PositionLegalMove);
             }
-            else if (TileOwner == 0)
+            else if (TileOwner == Player)
             {
                 // La tile è occupata da un pezzo amico, quindi non possiamo muoverci su questa posizione
                 continue;
             }
-            else if (TileOwner == 1)
+            else if (TileOwner != Player)
             {
                 // La tile è occupata da un pezzo avversario, la mossa è valida
                 (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
@@ -83,4 +84,6 @@ TArray<FVector2D> AHorse::CalculateMoves(ATile* CurrTile)
 
     // Restituiamo l'array delle mosse legali
     return LegalMoves;
+
+    
 }

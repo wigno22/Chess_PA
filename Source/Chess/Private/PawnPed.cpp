@@ -44,7 +44,7 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
     TArray<FVector2D> LegalMoves;
     int32 Player = CurrTile->GetTileOwner();
     int32 Direzione = 1;
-
+   
     // Definiamo le direzioni possibili per la torre: sopra, sotto, a sinistra e a destra
     if (Player != 0)
     {
@@ -57,15 +57,19 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
 
     // Per ogni direzione possibile
     
-        if ((CurrTile->GetGridPosition().X == 1 && Player == 0) || (CurrTile->GetGridPosition().X == 6 && Player == 1))
+        if ((CurrTile->GetGridPosition().X == 1 && Player == 0 ) || (CurrTile->GetGridPosition().X == 6 && Player == 1))
         {
 	        MossaVert = 2;
+           
+                
         }
         else
         {
             MossaVert = 1;
         }
+
         
+
 
         // Per ogni passo possibile in quella direzione
         for (int i = 1; i <= MossaVert; i++)
@@ -74,7 +78,7 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
             {
                 ATile* TileSX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + Direzione, CurrTile->GetGridPosition().Y - 1));
 
-                    if (TileSX->GetTileOwner() == 1)
+                    if (TileSX->GetTileOwner() != CurrTile->GetTileOwner() && TileSX->GetTileOwner() != -1)
                     {
                         (*GameMode->GField->TileMap.Find(TileSX->GetGridPosition()))->bIsValid = true;
                         LegalMoves.Add(TileSX->GetGridPosition());
@@ -86,18 +90,13 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
             {
                 ATile* TileDX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + Direzione, CurrTile->GetGridPosition().Y + 1));
 
-                if (TileDX->GetTileOwner() == 1)
+                if (TileDX->GetTileOwner() != CurrTile->GetTileOwner() && TileDX->GetTileOwner() != -1)
                 {
                     (*GameMode->GField->TileMap.Find(TileDX->GetGridPosition()))->bIsValid = true;
                     LegalMoves.Add(TileDX->GetGridPosition());
                 }
             }
             
-
-           
-           
-
-   
 
 
             // Calcoliamo la posizione della mossa legale

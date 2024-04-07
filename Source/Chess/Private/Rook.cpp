@@ -41,6 +41,8 @@ TArray<FVector2D> ARook::CalculateMoves(ATile* CurrTile)
     {
         AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
+        int32 Player = CurrTile->GetTileOwner();
+
         // Inizializziamo l'array delle mosse legali
         TArray<FVector2D> LegalMoves;
 
@@ -69,12 +71,11 @@ TArray<FVector2D> ARook::CalculateMoves(ATile* CurrTile)
                         (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
                         LegalMoves.Add(PositionLegalMove);
                     }
-                    else if (ProprietarioTile == 0)
+                    else if (ProprietarioTile == Player)
                     {
-
                         break;
                     }
-                    else if (ProprietarioTile == 1)
+                    else if (ProprietarioTile != Player)
                     {
                         // La tile è occupata da un pezzo avversario, la mossa è valida ma non possiamo muoverci oltre
                         (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;

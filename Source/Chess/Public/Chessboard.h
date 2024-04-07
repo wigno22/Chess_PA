@@ -20,7 +20,26 @@ public:
 
 	int32 GloXC = 7;
 	int32 GloXG = 7;
+	int32 GloYC = -3;
+	int32 GloYG = 10;
 
+	//classe 
+ class Spostato
+	{
+	public:
+		FVector2D PosInit;
+		FVector2D PosFin;
+		APiece* Pezzo;
+	};
+
+	//voglio un array della classe Spostato per tenere traccia delle mosse
+	TArray<Spostato> Mosse;
+
+	//voglio un array che tenga conto delle pedine bianche
+	TArray<APiece*> PezziBianchiMangiati;
+	//voglio un array che tenga conto delle pedine nere
+	TArray<APiece*> PezziNeriMangiati;
+	
 
 	// Sets default values for this actor's properties
 	AChessboard();
@@ -77,10 +96,10 @@ public:
 	FVector2D TileAttiva;
 
 	//Metodo per le mosse legali a cui passo la posizione della pedina selezionata
-	void ColorLegalMoves(TArray<FVector2D> MosseLegali);
+	bool  ColorLegalMoves(TArray<FVector2D> MosseLegali,  ATile* TileDef);
 
 	//metodo per fare la mossa
-	void DoMove(FVector2D PosInit, FVector2D PosFin);
+	void DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer);
 
 	//metodo per resettare mosse legali
 	void ResetLegalMoves();
@@ -118,16 +137,7 @@ public:
 
 	ATile* GetTileAtPosition(const FVector2D& Position) const;
 
-	// get a line given a begin and end positions
-	//TArray<int32> GetLine(const FVector2D Begin, const FVector2D End) const;
 
-protected:
-	// Called when the game starts or when spawned
-	//virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	//virtual void Tick(float DeltaTime) override;
 
 
 

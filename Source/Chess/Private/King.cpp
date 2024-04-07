@@ -42,6 +42,7 @@ TArray<FVector2D> AKing::CalculateMoves(ATile* CurrTile)
 {
     AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
+    int32 Player = CurrTile->GetTileOwner();
     // Inizializziamo l'array delle mosse legali
     TArray<FVector2D> LegalMoves;
 
@@ -62,10 +63,21 @@ TArray<FVector2D> AKing::CalculateMoves(ATile* CurrTile)
             PositionLegalMove.Y >= 0 && PositionLegalMove.Y < 8)
         {
             // Controllo se la tile è vuota o occupata da un pezzo
-            int32 ProprietarioTile = (*GameMode->GField->TileMap.Find(PositionLegalMove))->GetTileOwner();
-            if (ProprietarioTile == -1 || ProprietarioTile == 1)
+            int32 TileOwner = (*GameMode->GField->TileMap.Find(PositionLegalMove))->GetTileOwner();
+            if (TileOwner == -1)
             {
-                // La tile è vuota o occupata da un pezzo avversario, quindi la mossa è valida
+                // La tile è vuota, quindi la mossa è valida
+                (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
+                LegalMoves.Add(PositionLegalMove);
+            }
+            else if (TileOwner == Player)
+            {
+                // La tile è occupata da un pezzo amico, quindi non possiamo muoverci su questa posizione
+                continue;
+            }
+            else if (TileOwner != Player)
+            {
+                // La tile è occupata da un pezzo avversario, la mossa è valida
                 (*GameMode->GField->TileMap.Find(PositionLegalMove))->bIsValid = true;
                 LegalMoves.Add(PositionLegalMove);
             }
