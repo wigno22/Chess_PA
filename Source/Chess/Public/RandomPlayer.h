@@ -18,6 +18,10 @@ public:
 	ARandomPlayer();
 
 	TArray<APiece*> PezziAI;
+
+	//array di pezzi che possono muoversi per poi sceglierne uno e muoverlo
+	TArray<FVector2D> MossePossible;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

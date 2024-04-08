@@ -9,6 +9,7 @@
 #include <King.h>
 #include <Queen.h>
 #include <PawnPed.h>
+#include <RandomPlayer.h>
 
 
 // Sets default values
@@ -29,7 +30,8 @@ AChessboard::AChessboard()
 bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali  ,ATile* TileDef)
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	 
+	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
+	
 	//ciclo per colorare le mosse legali
 	for (int i=0; i<MosseLegali.Num(); i++)
 	{
@@ -40,9 +42,25 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali  ,ATile* TileDe
 		if (ProprietarioTile != -1 && ProprietarioTile != GameMode->CurrentPlayer)
 		{
 			(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, RedMaterial);
+			//RandomPlayer->MossePossible.Add(MosseLegali[i]);
+
+			//APiece* PezzoDaMangiare = (*TileMap.Find(MosseLegali[0]))->GetPiece();
 
 			if (GameMode->CurrentPlayer == 1)
 			{
+				//prima di mangiare guardo se ho la possibilità di mangiare due pedine devo mangiare quella più pesante
+				
+				/*for (int32 j=0; j< RandomPlayer->MossePossible.Num(); j++ )
+				{
+					//non devo passare le mosse legali ma solo quelle per cui posso mangiare
+					
+					if ((*TileMap.Find(RandomPlayer->MossePossible[j]))->GetPiece()->GetWeight() > PezzoDaMangiare->GetWeight())
+					{
+						PezzoDaMangiare = (*TileMap.Find(RandomPlayer->MossePossible[j]))->GetPiece();
+					}
+				}*/
+
+			//	FVector2D PosPezzoDaMangiare = PezzoDaMangiare->GetGridPosition();
 				GameMode->GField->DoMove(TileDef->GetGridPosition(), MosseLegali[i], GameMode->CurrentPlayer);
 				ResetLegalMoves();
 				return true;
@@ -100,7 +118,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			//prendo il pezzo e lo metto fuori scacchiera
 			PieceFin->SetGridPosition(GloXC, GloYC);
 			
-			if (PezziNeriMangiati.Num() > 8 && GloXC == 0)
+			if (GloXC <  0)
 			{
 				GloYC = -4;
 				GloXC = 7;
@@ -123,7 +141,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			//aggiungo a pezzi mangiati il pezzo mangiato
 			PezziBianchiMangiati.Add(PieceFin);
 
-			if (PezziBianchiMangiati.Num() > 8 && GloXG == 0)
+			if (GloXG < 0)
 			{
 				GloYG = 11;
 				GloXG = 7;

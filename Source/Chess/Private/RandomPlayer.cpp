@@ -79,6 +79,7 @@ TArray<APiece*> ARandomPlayer::RilevaPezzi()
 void ARandomPlayer::SimulaMosse()
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	bool TrovataMossa = false;
 
 	for (APiece* Piece : PezziAI)
 	{
@@ -90,11 +91,38 @@ void ARandomPlayer::SimulaMosse()
 
 		if (GameMode->GField->ColorLegalMoves(Mosselegali, CurrTile))
 		{
+			TrovataMossa = true;
 			GameMode->CurrentPlayer = 0;
 			break;
 		}
 
 	}
+
+	if (!TrovataMossa)
+	{
+		for (APiece* Piece : PezziAI)
+		{
+			APiece* PieceToMove = Piece;
+			TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
+			GameMode->GField->TileAttiva = Piece->GetTile()->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+			if (Mosselegali.Num() > 0 && GameMode->CurrentPlayer == 1)
+			{
+				//prima di fare la mossa devo scegliere il pezzo da muovere in base a quello che ha il peso minore
+				if (Piece->GetWeight() < PieceToMove->GetWeight())
+				{
+					PieceToMove = Piece;
+				}
+					
+				GameMode->GField->DoMove(PieceToMove->GetTile()->GetGridPosition(), Mosselegali[0], GameMode->CurrentPlayer);
+				GameMode->GField->ResetLegalMoves();
+				break;
+			}
+			
+		}
+		GameMode->CurrentPlayer = 0;
+		 
+	}
+	 
 	GameMode->CurrentPlayer = 0;
 	
 }

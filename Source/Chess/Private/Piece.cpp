@@ -64,7 +64,7 @@ TArray<FVector2D> APiece::CalculateMoves(ATile* CurrTile)
 }
 
 
-int32 APiece::GetWeight()
+int32 APiece::GetWeight() const
 {
 	return Weight;
 }

@@ -66,7 +66,7 @@ public:
 	UPROPERTY (VisibleAnywhere, BlueprintReadOnly)
 	int32 Weight;
 
-	int32 GetWeight();
+	int32 GetWeight() const;
 
 	void SetWeight(int32 NewWeight);
 
