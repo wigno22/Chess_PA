@@ -12,6 +12,8 @@ AChessGameMode::AChessGameMode()
 	PlayerControllerClass = AChessPlayerController::StaticClass();
 	DefaultPawnClass = AHumanPlayer::StaticClass();
 	FieldSize = 8;
+	// get the game instance reference
+	GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 }
 
@@ -41,7 +43,7 @@ void AChessGameMode::BeginPlay()
 
 	float CameraPosX = ((GField->TileSize * (FieldSize + ((FieldSize - 1) * GField->NormalizedCellPadding) - (FieldSize - 1))) / 2) - (GField->TileSize / 2);
 	
-	FVector CameraPos(CameraPosX, CameraPosX, 1000.0f);
+	FVector CameraPos(CameraPosX, CameraPosX, 1100.0f);
 	HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
 
 	// Human player = 0
@@ -62,7 +64,6 @@ void AChessGameMode::BeginPlay()
 void AChessGameMode::ChoosePlayerAndStartGame()
 {
 	CurrentPlayer = 0;
-		//FMath::RandRange(0, Players.Num() - 1);
 
 	for (int32 i = 0; i < Players.Num(); i++)
 	{
@@ -101,13 +102,20 @@ void AChessGameMode::TurnNextPlayer(int32 Player)
 		TArray<APiece*> PezziAI;
 
 		//cast di random player per poter usare i suoi metodi
-		ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(Players[1]);
+		ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(Players[Player]);
 
-		PezziAI= RandomPlayer->RilevaPezzi();
-
-		RandomPlayer->SimulaMosse();
+		
+		RandomPlayer->GiocatoreAI(Player);
 	}
 	
 	 
 }
   
+
+void AChessGameMode::OnWin()
+{
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Win!"));
+	GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+	GameInstance->IncrementScoreHumanPlayer();
+}

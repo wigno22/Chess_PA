@@ -28,7 +28,9 @@ AHumanPlayer::AHumanPlayer()
 	SetRootComponent(Camera);
 
 	// get the game instance reference
-	//GameInstance = Cast<UGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+
 	//default values
 	PlayerNumber = -1;
 
@@ -40,6 +42,24 @@ void AHumanPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 }
+
+
+void AHumanPlayer::OnWin()
+{
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Win!"));
+	//GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+	//GameInstance->IncrementScoreHumanPlayer();
+}
+
+
+void AHumanPlayer::OnLose()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Lose!"));
+	GameInstance->SetTurnMessage(TEXT("Human Loses!"));
+}
+
+
 
 /* Called every frame
 void AHumanPlayer::Tick(float DeltaTime)
@@ -83,7 +103,7 @@ void AHumanPlayer::EseguiMossaUman()
 }
 void AHumanPlayer::OnClick()
 {
-	//MARCO
+	
 	//Super::BeginPlay();
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	AHumanPlayer::EseguiMossaUman();

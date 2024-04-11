@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PlayerInterface.h"
 #include "Chessboard.h"
+#include "ChessGameInstance.h"
 #include "GameFramework/GameMode.h"
 #include "ChessGameMode.generated.h"
 
@@ -22,8 +23,22 @@ class CHESS_API AChessGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 public:
+	
+	//void OnTurn() override;
+	void OnWin() ;
+	 
+	
+	
 	// tracks if the game is over
 	bool IsGameOver;
+
+	// tracks if the game is over
+	int32 Winner;
+
+	//game instance reference
+	UChessGameInstance* GameInstance;
+
+
 	// array of player interfaces
 	TArray<IPlayerInterface*> Players;
 	int32 CurrentPlayer;

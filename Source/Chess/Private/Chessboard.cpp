@@ -9,7 +9,10 @@
 #include <King.h>
 #include <Queen.h>
 #include <PawnPed.h>
+#include <ChessGameMode.h>
+#include <HumanPlayer.h>
 #include <RandomPlayer.h>
+#include <GameMapsSettings.h>
 
 
 // Sets default values
@@ -32,43 +35,44 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali  ,ATile* TileDe
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
 	
+	ATile* TileMangiato = nullptr;
+	bool passa = false;
+
 	//ciclo per colorare le mosse legali
 	for (int i=0; i<MosseLegali.Num(); i++)
 	{
 		int32 ProprietarioTile = (*TileMap.Find(MosseLegali[i]))->GetTileOwner();
 
+		Mangiata PedinaMangiata{};
+
 		(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, GreenMaterial);
 		
 		if (ProprietarioTile != -1 && ProprietarioTile != GameMode->CurrentPlayer)
 		{
-			(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, RedMaterial);
-			//RandomPlayer->MossePossible.Add(MosseLegali[i]);
+			TileMangiato= (*TileMap.Find(MosseLegali[i]));
 
-			//APiece* PezzoDaMangiare = (*TileMap.Find(MosseLegali[0]))->GetPiece();
-
+			TileMangiato->StaticMeshComponent->SetMaterial(0, RedMaterial);
+			
 			if (GameMode->CurrentPlayer == 1)
 			{
-				//prima di mangiare guardo se ho la possibilità di mangiare due pedine devo mangiare quella più pesante
-				
-				/*for (int32 j=0; j< RandomPlayer->MossePossible.Num(); j++ )
-				{
-					//non devo passare le mosse legali ma solo quelle per cui posso mangiare
-					
-					if ((*TileMap.Find(RandomPlayer->MossePossible[j]))->GetPiece()->GetWeight() > PezzoDaMangiare->GetWeight())
-					{
-						PezzoDaMangiare = (*TileMap.Find(RandomPlayer->MossePossible[j]))->GetPiece();
-					}
-				}*/
+				PedinaMangiata.PosPezzoMangiante = TileDef->GetGridPosition();
+				PedinaMangiata.PosPezzoMangiato = MosseLegali[i];
+				PedinaMangiata.PezzoMangiante = TileDef->GetPiece();
+				PedinaMangiata.PesoMangiante = TileDef->GetPiece()->GetWeight();
+				PedinaMangiata.PezzoMangiato = TileMangiato->GetPiece();
+				PedinaMangiata.PesoMangiato = TileMangiato->GetPiece()->GetWeight();
+				PedinaMangiata.Player = GameMode->CurrentPlayer;
 
-			//	FVector2D PosPezzoDaMangiare = PezzoDaMangiare->GetGridPosition();
-				GameMode->GField->DoMove(TileDef->GetGridPosition(), MosseLegali[i], GameMode->CurrentPlayer);
+				//aggiorno array che tiene conto delle pedine mangiate
+				Mangiate.Add(PedinaMangiata);
+						
 				ResetLegalMoves();
-				return true;
+				passa = true;
 			}
 		}
 
 	}
-	return false;
+	return passa;
 
 
 }
@@ -97,6 +101,8 @@ void AChessboard::ResetLegalMoves()
 //funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
 void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer)
 {
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+		
 	//prendo il pezzo nella posizione iniziale e lo sposto nella posizione finale
 	//poi metto la posizione iniziale a vuota e la posizione finale occupata
 
@@ -154,7 +160,20 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			GloXG = GloXG - 1;
 			PieceFin->SetActorLocation(Position);
 		}
+
+		if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
+		{
+			if (PieceFin->GetWeight() == 100)
+			{
+				GameMode->IsGameOver = true;
+				GameMode->Winner = CurrentPlayer;
+				GameMode->OnWin();
+			}
+		}
+		
+
 	}
+
 
 
 	APiece* Piece = (*TileMap.Find(PosInit))->GetPiece();
@@ -276,7 +295,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 
 		PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(50);
+		PieceObj->SetWeight(100);
 	}
 
 	else if (x == 7 && y == 4)
@@ -289,7 +308,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		PieceObj->SetWeight(50);
+		PieceObj->SetWeight(100);
 
 	}
 
@@ -297,7 +316,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 	{
 
 		PieceObj = GetWorld()->SpawnActor<AQueen>(AQueen::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(40);
+		PieceObj->SetWeight(50);
 	
 	}
 	else if (x == 7 && y == 3)
@@ -309,13 +328,13 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		PieceObj->SetWeight(40);
+		PieceObj->SetWeight(50);
 	}
 	else if (x == 0 && (y == 1 || y == 6))
 	{
 
 		PieceObj = GetWorld()->SpawnActor<AHorse>(AHorse::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(20);
+		PieceObj->SetWeight(40);
 	}
 	else if (x == 7 && (y == 1 || y == 6))
 	{
@@ -326,7 +345,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
 		MeshComponent->SetMaterial(0, NewMaterial);
 		BW = 1;
-		PieceObj->SetWeight(20);
+		PieceObj->SetWeight(40);
 	}
 	else if (x == 1)
 	{

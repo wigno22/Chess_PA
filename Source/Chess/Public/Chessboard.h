@@ -23,7 +23,7 @@ public:
 	int32 GloYC = -3;
 	int32 GloYG = 10;
 
-	//classe 
+//classe per tenere traccia delle mosse
  class Spostato
 	{
 	public:
@@ -32,8 +32,26 @@ public:
 		APiece* Pezzo;
 	};
 
+ //classe per tener traccia delle mangiate
+ class Mangiata
+	{
+	public:
+		FVector2D PosPezzoMangiante;
+		FVector2D PosPezzoMangiato;
+		APiece* PezzoMangiante;
+		int32 PesoMangiante;
+		APiece* PezzoMangiato;
+		int32 PesoMangiato;
+		int32 Player;
+
+		 
+	};
+
 	//voglio un array della classe Spostato per tenere traccia delle mosse
 	TArray<Spostato> Mosse;
+
+	TArray<Mangiata> Mangiate;
+	TArray<Mangiata> MangiateNew;
 
 	//voglio un array che tenga conto delle pedine bianche
 	TArray<APiece*> PezziBianchiMangiati;

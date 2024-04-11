@@ -27,7 +27,7 @@ public:
 	UCameraComponent* Camera;
 
 	//game instance reference
-	UGameInstance* GameInstance;
+	UChessGameInstance* GameInstance;
 
 	//puntatore a pezzo selezionato
 	APiece* CurrPieceSelected ;
@@ -48,8 +48,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	//void OnTurn() override;
-	//void OnWin() override;
-	//void OnLose() override;
+	void OnWin() override;
+	void OnLose() override;
 
 	void EseguiMossaUman();
 

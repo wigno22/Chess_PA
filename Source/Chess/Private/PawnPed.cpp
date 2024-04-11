@@ -74,7 +74,7 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
         // Per ogni passo possibile in quella direzione
         for (int i = 1; i <= MossaVert; i++)
         {
-            if ((CurrTile->GetGridPosition().Y - 1)>=0 && CurrTile->GetGridPosition().X + 1<8)
+            if ((CurrTile->GetGridPosition().Y - 1)>=0 && CurrTile->GetGridPosition().X + 1< 8 && CurrTile->GetGridPosition().X + Direzione >= 0)
             {
                 ATile* TileSX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + Direzione, CurrTile->GetGridPosition().Y - 1));
 
@@ -86,7 +86,7 @@ TArray<FVector2D> APawnPed::CalculateMoves(ATile* CurrTile)
             }
 		
             
-            if ((CurrTile->GetGridPosition().Y + 1) < 8  && CurrTile->GetGridPosition().X + 1 < 8)
+            if ((CurrTile->GetGridPosition().Y + 1) < 8  && CurrTile->GetGridPosition().X + 1 < 8 && CurrTile->GetGridPosition().X + Direzione >=0)
             {
                 ATile* TileDX = *GameMode->GField->TileMap.Find(FVector2D(CurrTile->GetGridPosition().X + Direzione, CurrTile->GetGridPosition().Y + 1));
 

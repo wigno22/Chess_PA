@@ -34,10 +34,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	//virtual void OnTurn() override;
-	//virtual void OnWin() override;
+	virtual void OnWin() override;
 	//virtual void OnLose() override;
 
-	void GiocatoreAI();
-	TArray<APiece*> RilevaPezzi();
+	void GiocatoreAI(int32 Player);
+	TArray<APiece*> RilevaPezzi(int32 Player);
 	void SimulaMosse();
+	bool SimulaControMossa(FVector2D TilePosition);
 };
