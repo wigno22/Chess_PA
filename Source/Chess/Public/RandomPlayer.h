@@ -5,8 +5,13 @@
 #include "CoreMinimal.h"
 #include "PlayerInterface.h"
 #include "ChessGameMode.h"
+#include "Chessboard.h"
+#include "vector"
 #include "GameFramework/Pawn.h"
 #include "RandomPlayer.generated.h"
+
+
+class AChessboard;
 
 UCLASS()
 class CHESS_API ARandomPlayer : public APawn, public IPlayerInterface
@@ -21,6 +26,13 @@ public:
 
 	//array di pezzi che possono muoversi per poi sceglierne uno e muoverlo
 	TArray<FVector2D> MossePossible;
+
+	std::vector<AChessboard::Mangiata> Mangiate;
+
+	//game instance reference
+	UChessGameInstance* GameInstance;
+
+	std::vector<AChessboard::Spostato> MossaRandom;
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,4 +53,9 @@ public:
 	TArray<APiece*> RilevaPezzi(int32 Player);
 	void SimulaMosse();
 	bool SimulaControMossa(FVector2D TilePosition);
+
+
+
+	std::vector <AChessboard::Mangiata> GiocatoreAIScacco(int32 Player);
+	std::vector <AChessboard::Mangiata> SimulaMosseScacco(int32 Player);
 };

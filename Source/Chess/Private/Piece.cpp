@@ -64,6 +64,26 @@ TArray<FVector2D> APiece::CalculateMoves(ATile* CurrTile)
 }
 
 
+FString APiece::GetTipoPedina() const
+{
+	return TipoPedina;
+}
+
+void APiece::SetTipoPedina(FString NewTipoPedina)
+{
+		TipoPedina = NewTipoPedina;
+}
+
+FString APiece::GetName() const
+{
+	return Name;
+}
+
+void APiece::SetName(FString NewName)
+{
+		Name = NewName;
+}
+
 int32 APiece::GetWeight() const
 {
 	return Weight;
@@ -99,20 +119,4 @@ void APiece::SelfDestroy()
 {
 		Destroy();
 }
-
-
-
-/* Called every frame
-void APiece::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
-// Called to bind functionality to input
-void APiece::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}*/
 

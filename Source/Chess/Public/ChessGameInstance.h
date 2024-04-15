@@ -4,11 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+//#include "ChessWidget.h"
 #include "ChessGameInstance.generated.h"
 
-/**
- * 
- */
+class UChessWidget;
+
 UCLASS()
 class CHESS_API UChessGameInstance : public UGameInstance
 {
@@ -24,6 +24,8 @@ public:
 	// score value for AI player
 	UPROPERTY(EditAnywhere)
 	int32 ScoreAiPlayer = 0;
+
+	UChessWidget* ChessWidget;
 
 	// message to show every turn
 	UPROPERTY(EditAnywhere)

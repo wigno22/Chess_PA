@@ -4,8 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Tile.h"
+#include "ChessGameInstance.h"
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include "ChessBuild.h"
 #include "GameFramework/Actor.h"
 #include "Chessboard.generated.h"
+
+
+class AChessBuild;
 
 //macro declaration for a dynamic multicast delegate
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReset);
@@ -19,9 +27,10 @@ class CHESS_API AChessboard : public AActor
 public:	
 
 	int32 GloXC = 7;
+	int32 GloYC = 8;
+
 	int32 GloXG = 7;
-	int32 GloYC = -3;
-	int32 GloYG = 10;
+	int32 GloYG = 11;
 
 //classe per tenere traccia delle mosse
  class Spostato
@@ -44,13 +53,11 @@ public:
 		int32 PesoMangiato;
 		int32 Player;
 
-		 
 	};
 
 	//voglio un array della classe Spostato per tenere traccia delle mosse
 	TArray<Spostato> Mosse;
-
-	TArray<Mangiata> Mangiate;
+	std::vector<Mangiata> Mangiate;
 	TArray<Mangiata> MangiateNew;
 
 	//voglio un array che tenga conto delle pedine bianche
@@ -61,6 +68,12 @@ public:
 
 	// Sets default values for this actor's properties
 	AChessboard();
+
+
+
+	UFUNCTION(BlueprintCallable)
+	bool  InizializzaGioco();
+
 
 	// keeps track of tiles
 	UPROPERTY(Transient)
@@ -109,12 +122,25 @@ public:
 	UMaterialInterface* RedMaterial;
 
 
+
 	//Attributo per la posizione della pedina selezionata
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D TileAttiva;
 
+
+	UFUNCTION(BlueprintCallable)
+	bool  ColorLegalMovesRE(TArray<FVector2D> MosseLegali, ATile* TileDef);
+
 	//Metodo per le mosse legali a cui passo la posizione della pedina selezionata
-	bool  ColorLegalMoves(TArray<FVector2D> MosseLegali,  ATile* TileDef);
+	UFUNCTION(BlueprintCallable)
+	bool  ColorLegalMoves(TArray<FVector2D> MosseLegali,  ATile* TileDef); 
+
+	FVector2D TrovaRe(int32 Owner);
+
+
+	void RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Pezzo);
+
+	APiece* PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiece* Piece);
 
 	//metodo per fare la mossa
 	void DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer);
@@ -122,6 +148,8 @@ public:
 	//metodo per resettare mosse legali
 	void ResetLegalMoves();
 
+
+	
 	//Called when an instance of this class is placed (in editor) or spawned
 	virtual void OnConstruction(const FTransform& Transform) override;
 
@@ -135,8 +163,7 @@ public:
 	//generate an empty field
 	void GenerateField();
 
-	//metodo per generare la pedina
-	virtual void GeneratePiece(int32 x, int32 y);
+	void RigeneraTileArray();
 
 	// return a (x,y) position given a hit (click) on a field tile
 	FVector2D GetTilePosition(const FHitResult& Hit);
@@ -155,9 +182,23 @@ public:
 
 	ATile* GetTileAtPosition(const FVector2D& Position) const;
 
+	
+	int weightDifference(int32 PesoMangiante, int32 PesoMangiato );
+
+	int partition(int low, int high);
+
+	
+	void quickSort( int low, int high);
+	
+	void ClearScrollBox();
 
 
-
-
+	virtual void GeneratePiece(int32 x, int32 y);
+	APiece* CreaPedone(int32 Colore, FVector Position);
+	APiece* CreaRegina(int32 Colore, FVector Position);
+	APiece* CreaAlfiere(int32 Colore, FVector Position, int32 y);
+	APiece* CreaTorre(int32 Colore, FVector Position, int32 y);
+	APiece* CreaCavallo(int32 Colore, FVector Position, int32 y);
+	
 
 };

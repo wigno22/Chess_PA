@@ -19,6 +19,10 @@ ARandomPlayer::ARandomPlayer()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	// get the game instance reference
+	GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+
 }
 
 // Called when the game starts or when spawned
@@ -43,14 +47,70 @@ void ARandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 }
 
 
+std::vector<AChessboard::Mangiata> ARandomPlayer::GiocatoreAIScacco(int32 Player)
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	RilevaPezzi(Player);
+	 
+	return SimulaMosseScacco(Player);
+	 
+}
 
 
+std::vector<AChessboard::Mangiata> ARandomPlayer::SimulaMosseScacco(int32 Player)
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	bool TrovataMossa = false;
+	TArray<FVector2D> Mosselegali;
+	while (GameMode->GField->Mangiate.size() > 0)
+	{
+		GameMode->GField->Mangiate.erase(GameMode->GField->Mangiate.begin() + 0); // Rimuovi il primo elemento dall'array
+	}
+
+	while (GameMode->GField->MangiateNew.Num() > 0)
+	{
+		GameMode->GField->MangiateNew.RemoveAt(0); // Rimuovi il primo elemento dall'array
+	}
+
+	for (APiece* Piece : PezziAI)
+	{
+
+		Mosselegali = Piece->CalculateMoves(Piece->GetTile());
+		GameMode->GField->TileAttiva = Piece->GetTile()->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+
+		ATile* CurrTile = Piece->GetTile();
+
+		if (GameMode->GField->ColorLegalMovesRE(Mosselegali, CurrTile))
+		{
+			TrovataMossa = true;
+
+		}
+
+	}
+
+
+	if (TrovataMossa)
+	{
+		int32 Posizione = 0;
+		Posizione = GameMode->GField->Mangiate.size();
+
+
+		// Ordinamento dell'array utilizzando l'algoritmo di ordinamento rapido
+		GameMode->GField->quickSort(0, GameMode->GField->Mangiate.size() - 1);
+
+		
+
+	}
+
+	return GameMode->GField->Mangiate;
+}
 
 void ARandomPlayer::GiocatoreAI(int32 Player)
 {
 
 	RilevaPezzi(Player);
 	SimulaMosse();
+	
 }
 
  //Rilevo tutti i pezzi del computer e li metto in un array per poi simulare le mosse
@@ -64,9 +124,9 @@ TArray<APiece*> ARandomPlayer::RilevaPezzi(int32 Player)
 	}
 
 
-	for (auto& CurrTile : GameMode->GField->GetTileArray())
+	for (auto& CurrTile : GameMode->GField->TileArray)
 	{
-		if (CurrTile->GetTileOwner() == Player)
+		if (CurrTile->GetTileOwner() == Player && CurrTile->GetTileOwner() != NULL)
 		{
 			PezziAI.Add(CurrTile->GetPiece());
 		}
@@ -81,9 +141,9 @@ void ARandomPlayer::SimulaMosse()
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	bool TrovataMossa = false;
 
-	while (GameMode->GField->Mangiate.Num() > 0)
+	while (GameMode->GField->Mangiate.size() > 0)
 	{
-		GameMode->GField->Mangiate.RemoveAt(0); // Rimuovi il primo elemento dall'array
+		GameMode->GField->Mangiate.erase(GameMode->GField->Mangiate.begin() + 0); // Rimuovi il primo elemento dall'array
 	}
 
 	while (GameMode->GField->MangiateNew.Num() > 0)
@@ -107,10 +167,18 @@ void ARandomPlayer::SimulaMosse()
 
 	}
 
+
 	if (TrovataMossa)
 	{
 		int32 Posizione = 0;
-		Posizione = GameMode->GField->Mangiate.Num();
+		Posizione = GameMode->GField->Mangiate.size();
+
+
+		// Ordinamento dell'array utilizzando l'algoritmo di ordinamento rapido
+		GameMode->GField->quickSort( 0, GameMode->GField->Mangiate.size() - 1);
+
+		
+
 
 		for (int32 j = 0; j < Posizione; j++)
 		{
@@ -118,7 +186,7 @@ void ARandomPlayer::SimulaMosse()
 			int32 PesoNew = 0;
 			int32 Indice = 0;
 
-			for (int32 i = 0; i < GameMode->GField->Mangiate.Num(); i++)
+			for (int32 i = 0; i < GameMode->GField->Mangiate.size(); i++)
 			{
 				PesoNew = GameMode->GField->Mangiate[i].PesoMangiante - GameMode->GField->Mangiate[i].PesoMangiato;
 				if (Peso > PesoNew)
@@ -145,14 +213,14 @@ void ARandomPlayer::SimulaMosse()
 				if (GameMode->GField->Mangiate[Indice].PesoMangiante - GameMode->GField->Mangiate[Indice].PesoMangiato <= 0)
 				{
 					GameMode->GField->DoMove(GameMode->GField->Mangiate[Indice].PosPezzoMangiante, GameMode->GField->Mangiate[Indice].PosPezzoMangiato, GameMode->GField->Mangiate[Indice].Player);
-					TrovataMossa = true;
+					TrovataMossa = true; 
 					break;
 				}
 				else
 				{
 					TrovataMossa = false;
-					GameMode->GField->Mangiate.RemoveAt(Indice);
-					Posizione = GameMode->GField->Mangiate.Num();
+					GameMode->GField->Mangiate.erase(GameMode->GField->Mangiate.begin() + 0 );
+					Posizione = GameMode->GField->Mangiate.size();
 				}
 
 
@@ -173,21 +241,39 @@ void ARandomPlayer::SimulaMosse()
 
 	if (!TrovataMossa)
 	{
+		TArray<FVector2D> Mosselegali;
+		AChessboard::Spostato Mossa{};
+
+		MossaRandom.clear();
+
 		for (APiece* Piece : PezziAI)
 		{
 
-			TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
+			Mosselegali = Piece->CalculateMoves(Piece->GetTile());
 			GameMode->GField->TileAttiva = Piece->GetTile()->GetGridPosition(); //mi restituisce coppia di coordinate x,y
-			if (Mosselegali.Num() > 0 && GameMode->CurrentPlayer == 1)
-			{
-				//metto in una variabile int un numero casuale tra 0 e il numero di mosse legali possibili
-				int32 RandomMove = FMath::RandRange(0, Mosselegali.Num() - 1);
-
-				GameMode->GField->DoMove(Piece->GetTile()->GetGridPosition(), Mosselegali[RandomMove], GameMode->CurrentPlayer);
-				GameMode->GField->ResetLegalMoves();
-				break;
-			}
 			
+			//mossa di partenza del pezzo
+			Mossa.PosInit = Piece->GetTile()->GetGridPosition();
+
+			//Faccio un for sulle mosselegali
+			for (int i = 0; i < Mosselegali.Num(); i++)
+			{
+				
+				Mossa.PosFin = Mosselegali[i];
+
+				MossaRandom.push_back(Mossa);
+			}
+
+			
+		}
+		if (MossaRandom.size() > 0 && GameMode->CurrentPlayer == 1)
+		{
+			//metto in una variabile int un numero casuale tra 0 e il numero di mosse legali possibili
+			int32 RandomMove = FMath::RandRange(0, MossaRandom.size() - 1);
+
+			GameMode->GField->DoMove(MossaRandom[RandomMove].PosInit, MossaRandom[RandomMove].PosFin, GameMode->CurrentPlayer);
+			GameMode->GField->ResetLegalMoves();
+		
 		}
 		 
 	}
@@ -235,7 +321,6 @@ bool ARandomPlayer::SimulaControMossa(FVector2D TilePosition)
 void ARandomPlayer::OnWin()
 {
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Win!"));
-	//GameInstance->SetTurnMessage(TEXT("Human Wins!"));
-	//GameInstance->IncrementScoreHumanPlayer();
+	GameInstance->SetTurnMessage(TEXT("AI Wins!"));
+	GameInstance->IncrementScoreAiPlayer();
 }

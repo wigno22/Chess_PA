@@ -11,6 +11,9 @@
 #include "EnhancedInputSubsystems.h"
 #include <Rook.h>
 #include <Horse.h> 
+#include <ChessWidget.h>
+#include <RandomPlayer.h>
+
 
 // Sets default values
 AHumanPlayer::AHumanPlayer()
@@ -47,16 +50,16 @@ void AHumanPlayer::BeginPlay()
 void AHumanPlayer::OnWin()
 {
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Win!"));
-	//GameInstance->SetTurnMessage(TEXT("Human Wins!"));
-	//GameInstance->IncrementScoreHumanPlayer();
+	GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+	GameInstance->IncrementScoreHumanPlayer();
 }
 
 
 void AHumanPlayer::OnLose()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Lose!"));
+	
 	GameInstance->SetTurnMessage(TEXT("Human Loses!"));
+	GameInstance->IncrementScoreAiPlayer();
 }
 
 
@@ -109,11 +112,91 @@ void AHumanPlayer::OnClick()
 	AHumanPlayer::EseguiMossaUman();
 }
 
+
+
+bool AHumanPlayer::ControlloMossaScacco(FVector2D TileArrivo)
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GameMode->Players[1]);
+	
+	FVector2D TilePartenza = GameMode->GField->TileAttiva;
+
+	FVector2D RePosition = FVector2D(-1, -1);
+	std::vector<AChessboard::Mangiata> Mangiate;
+	int32 Giocatore = GameMode->CurrentPlayer;
+	bool V_scacco = false;
+	int32 Avversario = 0;
+
+
+	
+	GameMode->GField->GetTileAtPosition(TilePartenza)->SetTileStatus(-1, ETileStatus::EMPTY);
+	
+
+	APiece* PedPartenza = GameMode->GField->GetTileAtPosition(TilePartenza)->GetPiece();
+	APiece* PedArrivo = GameMode->GField->GetTileAtPosition(TileArrivo)->GetPiece();
+	int32 OwnerArrivo = GameMode->GField->GetTileAtPosition(TileArrivo)->GetTileOwner();
+	ETileStatus StatusArrivo = GameMode->GField->GetTileAtPosition(TileArrivo)->GetTileStatus();
+	
+
+	GameMode->GField->GetTileAtPosition(TileArrivo)->SetTileStatus(Giocatore, ETileStatus::OCCUPIED);
+	GameMode->GField->GetTileAtPosition(TileArrivo)->SetPiece(PedPartenza);
+
+
+
+	if (Giocatore == 1) //se gioca il computer 
+	{
+		Avversario = 0; //l'avversario è il giocatore umano
+	}
+	else
+	{
+		Avversario = 1; //l'avversario è il computer
+	}
+
+
+	RePosition = GameMode->GField->TrovaRe(Giocatore); //Se bianchi avversario è il nero e viceversa
+	
+
+	if (RePosition.X >= 0)
+	{
+
+		Mangiate = RandomPlayer->GiocatoreAIScacco(Avversario);
+
+		for (int i = 0; i < Mangiate.size(); i++)
+		{
+			if (Mangiate[i].PosPezzoMangiato == RePosition)
+			{
+				GameInstance->SetTurnMessage(TEXT("La tua ultima mossa ti mette in scacco!"));
+				//Faccio comunque la mossa e controllo se è scacco matto
+				V_scacco = true;
+
+			}
+		}
+	}
+	
+	GameMode->GField->GetTileAtPosition(TilePartenza)->SetTileStatus(Giocatore, ETileStatus::OCCUPIED);
+	GameMode->GField->GetTileAtPosition(TileArrivo)->SetTileStatus(OwnerArrivo, StatusArrivo);
+	GameMode->GField->GetTileAtPosition(TileArrivo)->SetPiece(PedArrivo);
+	return V_scacco;
+}
+
+
+
+
+
+
 void AHumanPlayer::OnClickPers(ATile* CurrTile)
 {
 	
 	//prendo attributi gamemode qui per usarli nei due if
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	//cast random player per poter usare i suoi metodi
+	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GameMode->Players[1]);
+
+	//dichiaro cast di chesswidget per prendere attributi della mia classe e usare funzioni
+	UChessWidget* ChessWidget = Cast<UChessWidget>(GameInstance->ChessWidget);
+
+	FVector2D RePosition = FVector2D(-1, -1);
+	std::vector<AChessboard::Mangiata> Mangiate;
 
 	//Structure containing information about one hit of a trace, such as point of impact and surface normal at that point
 	FHitResult Hit = FHitResult(ForceInit);
@@ -125,28 +208,153 @@ void AHumanPlayer::OnClickPers(ATile* CurrTile)
 	//Primo Click
 	if (CurrTile->GetTileOwner() == 0)
 	{
+		if (GameMode->IsGameOver)
+		{
+
+			GameInstance->SetTurnMessage(TEXT("Partita Terminata Per Giocare Preme il bottone 'START GAME'"));
+									
+			return;
+		}
+
+
 		//devo resettare la memoria delle mosse valide
 		GameMode->GField->ResetLegalMoves();
 		//ho la mia tile, prenderò la pedina corrispondente e guarderò le legalmoves
 		APiece* Piece = CurrTile->GetPiece();
 		TArray<FVector2D> Mosselegali = Piece->CalculateMoves(CurrTile);
 		GameMode->GField->TileAttiva = CurrTile->GetGridPosition(); //mi restituisce coppia di coordinate x,y
+
+		FVector2D TileAttiva = CurrTile->GetGridPosition();
+
+		
+		//scorro le mosse legali per controllare di non farmi mangiare il re 
+		for (int i = 0; i < Mosselegali.Num(); i++)
+		{
+			if (ControlloMossaScacco(Mosselegali[i]))
+			{
+				Mosselegali.RemoveAt(i);
+				i--;
+			}
+		}
+		
+
+
+		GameMode->GField->TileAttiva = TileAttiva;
+
+
+
 		GameMode->GField->ColorLegalMoves(Mosselegali, CurrTile);
+		
+		
 		GameMode->TurnNextPlayer(0);
 	}
 	//Secondo Click
 	else
 	{
+
+		FVector2D TilePartenza = GameMode->GField->TileAttiva;
+		FVector2D TileArrivo = CurrTile->GetGridPosition();
+		int32 Giocatore = GameMode->CurrentPlayer;
+		bool V_scacco = false;
+		int32 Avversario = 0;
+
+		if (Giocatore == 1) //se gioca il computer 
+		{
+			Avversario = 0; //l'avversario è il giocatore umano
+		}
+		else
+		{
+			Avversario = 1; //l'avversario è il computer
+		}
+
+
+
 		//ho una tile che non appartiene a me ed è valida, devo fare la mossa
 		if (CurrTile->bIsValid == true)
 		{
 
-			GameMode->GField->DoMove(GameMode->GField->TileAttiva, CurrTile->GetGridPosition(), GameMode->CurrentPlayer);
+				RePosition = GameMode->GField->TrovaRe(Giocatore); //Se bianchi avversario è il nero e viceversa
+			
+			
+			if (RePosition.X >= 0)
+			{
+
+					Mangiate = RandomPlayer->GiocatoreAIScacco(Avversario);
+
+
+				
+				for (int i = 0; i < Mangiate.size(); i++)
+				{
+					if (Mangiate[i].PosPezzoMangiato == RePosition)
+					{
+						GameInstance->SetTurnMessage(TEXT("Scacco!"));
+						//Faccio comunque la mossa e controllo se è scacco matto
+						GameMode->GField->DoMove(TilePartenza, TileArrivo, Giocatore);
+						V_scacco = true;
+
+						RePosition = GameMode->GField->TrovaRe(Giocatore);
+						
+
+						if (RePosition.X >= 0)
+						{
+							Mangiate = RandomPlayer->GiocatoreAIScacco(Avversario);
+							for (int j = 0; j < Mangiate.size(); j++)
+							{
+								if (Mangiate[j].PosPezzoMangiato == RePosition)
+								{
+									GameInstance->SetTurnMessage(TEXT("Scacco!"));
+									GameMode->GField->DoMove(TileArrivo, TilePartenza, Giocatore);
+									V_scacco = true;
+									return;
+								}
+								 
+							}
+						}
+
+
+					}
+				}	
+				RandomPlayer->RilevaPezzi(0);
+			}
+
+
+			if (!V_scacco)
+			{
+				 
+				GameMode->GField->DoMove(TilePartenza, TileArrivo, Giocatore);
+			}
+
+
+
+			RePosition = GameMode->GField->TrovaRe(Giocatore); //Se bianchi avversario è il nero e viceversa
+
+
+			if (RePosition.X >= 0)
+			{
+
+				Mangiate = RandomPlayer->GiocatoreAIScacco(Avversario);
+
+				for (int i = 0; i < Mangiate.size(); i++)
+				{
+					if (Mangiate[i].PosPezzoMangiato == RePosition)
+					{
+						GameInstance->SetTurnMessage(TEXT("La tua ultima mossa ti mette in scacco!"));
+						//Faccio comunque la mossa e controllo se è scacco matto
+						GameMode->GField->DoMove(TileArrivo, TilePartenza, Giocatore);
+						V_scacco = true;
+						return;
+					}
+				}
+			}
+
+			GameInstance->SetTurnMessage(TEXT("  ---  "));
 			//voglio resettare le mosse valide
 			GameMode->GField->ResetLegalMoves();
+
 			GameMode->bIsMyTurn = false;
 			GameMode->TurnNextPlayer(1);
-		//	GameMode->GField->ResetLegalMoves();
+		
+			
 		}
 
 	}

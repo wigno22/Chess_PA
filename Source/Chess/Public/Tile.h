@@ -40,6 +40,9 @@ public:
 	//get the Piece on the Tile
 	APiece* GetPiece();
 
+	//set the Piece on the Tile
+	void SetPiece(APiece* InPiece);
+
 	//Set the position (X,Y)
 	void SetGridPosition(const double Inx, const double Iny);
 

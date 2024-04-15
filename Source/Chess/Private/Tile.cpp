@@ -52,6 +52,11 @@ APiece* ATile::GetPiece()
     return Piece;
 }
 
+void ATile::SetPiece(APiece* InPiece)
+{
+	Piece = InPiece;
+}
+
 FVector2D ATile::GetGridPosition()
 {
 	return GridPosition;
@@ -63,6 +68,8 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 	
 }
+
+
 
 
 /* Called every frame

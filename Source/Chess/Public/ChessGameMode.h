@@ -11,7 +11,7 @@
 
 class AActor;
 class AChessboard;
-
+class UChessWidget;
 struct FPosition;
 
 /**
@@ -26,17 +26,26 @@ public:
 	
 	//void OnTurn() override;
 	void OnWin() ;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UChessWidget> ChessWidgetClass;
+
+
+	UChessWidget* HUD;
+	
+
+	//funzione per aggiungere una mossa al widget
+	UFUNCTION(BlueprintCallable)
+	void AddMossa(FString Mossa, FVector2D PosFin);
+
 	 
-	
-	
+
 	// tracks if the game is over
 	bool IsGameOver;
 
 	// tracks if the game is over
 	int32 Winner;
 
-	//game instance reference
-	UChessGameInstance* GameInstance;
 
 
 	// array of player interfaces

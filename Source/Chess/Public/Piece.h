@@ -63,6 +63,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ATile* CurrentTile;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString TipoPedina;
+
+	FString GetTipoPedina() const;
+
+	void SetTipoPedina(FString NewTipoPedina);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FString Name;
+
+	FString GetName() const;
+
+	void SetName(FString NewName);
+
 	UPROPERTY (VisibleAnywhere, BlueprintReadOnly)
 	int32 Weight;
 

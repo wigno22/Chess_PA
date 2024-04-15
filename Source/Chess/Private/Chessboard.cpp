@@ -2,17 +2,28 @@
 
 //#include "BaseSign.h"
 #include "Chessboard.h"
-#include "Kismet/GameplayStatics.h"
+#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include "CoreMinimal.h"
+#include "Kismet/GameplayStatics.h" 
 #include <Rook.h>
 #include <Horse.h>
 #include <Bishop.h>
 #include <King.h>
 #include <Queen.h>
-#include <PawnPed.h>
+#include <PawnPed.h> 
 #include <ChessGameMode.h>
 #include <HumanPlayer.h>
 #include <RandomPlayer.h>
 #include <GameMapsSettings.h>
+#include <Components/TextBlock.h>
+#include <Blueprint/UserWidget.h>
+#include <BaseWidgetBlueprint.h>
+#include <ChessBuild.h>
+#include <ChessWidget.h>  
+
 
 
 // Sets default values
@@ -28,22 +39,84 @@ AChessboard::AChessboard()
 	//Tile padding
 	CellPadding = 0;
 
+	UChessGameInstance* GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+
 }
 
-bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali  ,ATile* TileDef)
+bool AChessboard::InizializzaGioco()
+{
+	//cast di gamemode
+	AChessGameMode* ChessGameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	//resetto il campo
+	ResetField();
+
+	ChessGameMode->IsGameOver = false;
+
+	GenerateField();
+	ClearScrollBox();
+	GameMode->IsGameOver = false;	
+
+	Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SetTurnMessage(TEXT(" Gioca ")); 
+	return true;
+}
+
+bool  AChessboard::ColorLegalMovesRE(TArray<FVector2D> MosseLegali, ATile* TileDef)
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
-	
+
 	ATile* TileMangiato = nullptr;
 	bool passa = false;
+
+	Mangiata PedinaMangiata{};
+
+	//ciclo per colorare le mosse legali
+	for (int i = 0; i < MosseLegali.Num(); i++)
+	{
+		int32 ProprietarioTile = (*TileMap.Find(MosseLegali[i]))->GetTileOwner();
+
+
+		if (ProprietarioTile == 0)
+		{
+			/*TileMangiato = (*TileMap.Find(MosseLegali[i]));
+
+			PedinaMangiata.PosPezzoMangiante = TileDef->GetGridPosition();
+			PedinaMangiata.PosPezzoMangiato = MosseLegali[i];
+			PedinaMangiata.PezzoMangiante = TileDef->GetPiece();
+			PedinaMangiata.PesoMangiante = TileDef->GetPiece()->GetWeight();
+			PedinaMangiata.PezzoMangiato = TileMangiato->GetPiece();
+			PedinaMangiata.PesoMangiato = TileMangiato->GetPiece()->GetWeight();
+			PedinaMangiata.Player = GameMode->CurrentPlayer;
+
+			Mangiate.push_back(PedinaMangiata);*/
+
+			passa = true;
+			
+		}
+
+	}
+	return passa;
+
+
+}
+
+bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef)
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
+
+	ATile* TileMangiato = nullptr;
+	bool passa = false;
+	
+	Mangiata PedinaMangiata{};
 
 	//ciclo per colorare le mosse legali
 	for (int i=0; i<MosseLegali.Num(); i++)
 	{
 		int32 ProprietarioTile = (*TileMap.Find(MosseLegali[i]))->GetTileOwner();
 
-		Mangiata PedinaMangiata{};
 
 		(*TileMap.Find(MosseLegali[i]))->StaticMeshComponent->SetMaterial(0, GreenMaterial);
 		
@@ -64,7 +137,7 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali  ,ATile* TileDe
 				PedinaMangiata.Player = GameMode->CurrentPlayer;
 
 				//aggiorno array che tiene conto delle pedine mangiate
-				Mangiate.Add(PedinaMangiata);
+				Mangiate.push_back(PedinaMangiata);
 						
 				ResetLegalMoves();
 				passa = true;
@@ -102,15 +175,12 @@ void AChessboard::ResetLegalMoves()
 void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer)
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-		
-	//prendo il pezzo nella posizione iniziale e lo sposto nella posizione finale
-	//poi metto la posizione iniziale a vuota e la posizione finale occupata
+	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
 
 	APiece* PieceFin = (*TileMap.Find(PosFin))->GetPiece();
-	
-	Spostato Mossa{};
 
 	
+
 	if ((*TileMap.Find(PosFin))->GetTileOwner() != (*TileMap.Find(PosInit))->GetTileOwner())
 	{
 		//aggiorno array che tiene conto dei pezzi mangiati 
@@ -124,9 +194,9 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			//prendo il pezzo e lo metto fuori scacchiera
 			PieceFin->SetGridPosition(GloXC, GloYC);
 			
-			if (GloXC <  0)
+			if (GloXC <  0 )
 			{
-				GloYC = -4;
+				GloYC = 9;
 				GloXC = 7;
 			}
 			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXC, GloYC);
@@ -134,8 +204,19 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			Position.Z = 5;
 			PieceFin->SetActorLocation(Position);
 
+			if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
+			{
+				if (PieceFin->GetWeight() == 100)
+				{
+					
+					GameMode->IsGameOver = true;
+					GameMode->Winner = CurrentPlayer;
+					GameMode->OnWin();
+				}
+			}
 
-
+			(*TileMap.Find(PosFin))->Piece = nullptr;
+			(*TileMap.Find(PosFin))->SetTileStatus(-1, ETileStatus::EMPTY);
 
 		}
 		else if ((*TileMap.Find(PosFin))->GetTileOwner() == 0)
@@ -149,7 +230,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 
 			if (GloXG < 0)
 			{
-				GloYG = 11;
+				GloYG = 12;
 				GloXG = 7;
 			}
 
@@ -159,17 +240,23 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			
 			GloXG = GloXG - 1;
 			PieceFin->SetActorLocation(Position);
+
+			if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
+			{
+				if (PieceFin->GetWeight() == 100)
+				{
+					
+					GameMode->IsGameOver = true;
+					GameMode->Winner = CurrentPlayer;
+					GameMode->OnWin();
+				}
+			}
+
+			(*TileMap.Find(PosFin))->Piece = nullptr;
+			(*TileMap.Find(PosFin))->SetTileStatus(-1, ETileStatus::EMPTY);
 		}
 
-		if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
-		{
-			if (PieceFin->GetWeight() == 100)
-			{
-				GameMode->IsGameOver = true;
-				GameMode->Winner = CurrentPlayer;
-				GameMode->OnWin();
-			}
-		}
+		
 		
 
 	}
@@ -177,19 +264,31 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 
 
 	APiece* Piece = (*TileMap.Find(PosInit))->GetPiece();
-
-
 	Piece->SetGridPosition(PosFin.X, PosFin.Y);
 	FVector Position = AChessboard::GetRelativeLocationByXYPosition(PosFin.X, PosFin.Y);
 	Position.Z = 5;
 	Piece->SetActorLocation(Position);
 
-	Mossa.PosInit = PosInit;
-	Mossa.PosFin = PosFin;
-	Mossa.Pezzo = Piece;
+	RegistraMosse(PosInit, PosFin, Piece);
+	
+	
 
-	// Aggiungi l'oggetto appena creato all'array Mosse
-	Mosse.Add(Mossa);
+	//Promozione pedone
+	//controllo se il pezzo è un pedone
+	if ((*TileMap.Find(PosInit))->GetPiece()->GetTipoPedina() == "PEDONE")
+	{
+		if ((*TileMap.Find(PosInit))->GetTileOwner() == 1 && PosFin.X == 0)
+		{
+			Piece = PromozionePedReg(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
+			//RandomPlayer->RilevaPezzi(1);
+		}
+		else if ((*TileMap.Find(PosInit))->GetTileOwner() == 0 && PosFin.X == 7)
+		{
+			Piece = PromozionePedReg(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
+			//RandomPlayer->RilevaPezzi(0);
+		}
+
+	}
 
 	// sistemo attributi della tile iniziale e finale 
 	(*TileMap.Find(PosFin))->Piece = Piece;
@@ -200,11 +299,189 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 
 	Piece->SetCurrentTile((*TileMap.Find(PosFin)));
 
-
+	
+	
 	ResetLegalMoves();
+
+	
 }
 
+APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiece* Piece)
+{
+	//UChessBuild* ChessBuild = Cast<UChessBuild>(GetWorld()->GetAuthGameMode());
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
+	int32 x = PosFin.X;
+	int32 y = PosFin.Y;
+	int32 OwnerPezzo = Piece->GetTile()->GetTileOwner();
+
+
+	PosFin.X = -9;
+	PosFin.Y = -9;
+	// aggiungo nella lista delle mosse la posizione -9,-9
+	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
+
+	
+
+	PosFin.X = x;
+	PosFin.Y = y;
+
+	// inserisco regina del colore corretto
+	const float PawnScale = TileSize / 180.0f;
+	//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+	FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
+	Position.Z = 5;
+	std::string newName = "";
+	int32 BW = 0;
+	APiece* PieceObj = nullptr;
+	 
+
+
+	// sistemo attributi della tile iniziale e finale 
+	
+	(*TileMap.Find(PosInit))->Piece = nullptr;
+
+	//per promuovere pedone in regina ho bisogno che la tile in cui creo la regina sia vuota
+	//cancello il pedone
+	Piece->Destroy();
+
+
+	(*TileMap.Find(PosFin))->SetTileStatus(-1, ETileStatus::EMPTY);
+	(*TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
+
+	
+
+
+
+
+
+	if (OwnerPezzo == 1)
+	{
+		
+		BW = 1;
+		 
+		PieceObj = CreaRegina(1, Position);
+		newName = "REGINA_B" + std::to_string(static_cast<int>(FMath::RandRange(0, 10000)));
+		
+	}
+	else {
+		 
+		PieceObj = CreaRegina(0, Position);
+		newName = "REGINA_W" + std::to_string(static_cast<int>(FMath::RandRange(0, 10000)));
+		
+
+	}
+
+	
+	FString fString;
+	PieceObj->SetName(fString.Printf(TEXT("%s"), *FString(newName.c_str())));
+
+
+	
+	PieceObj->SetTipoPedina("REGINA");
+	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));
+	PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+	PieceObj->SetGridPosition(x, y);
+	PieceObj->SetCurrentTile(Tile);
+
+	// Applica la rotazione dopo che l'oggetto è stato creato con successo
+	FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+	PieceObj->AddActorLocalRotation(Rotation);
+
+
+	(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(BW, ETileStatus::OCCUPIED);
+	(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
+
+	PieceObj->SetCurrentTile((*TileMap.Find(PosFin)));
+
+	// aggiungo nella lista delle mosse la creazione della regina con posizione -9,-9 -> pos vera
+	PosInit.X = -9;
+	PosInit.Y = -9;
+	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosFin))->GetPiece());
+	//RigeneraTileArray();
+
+	return PieceObj;
+}
+
+void AChessboard::RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Piece)
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	Spostato Mossa{};
+
+	Mossa.PosInit = PosInit;
+	Mossa.PosFin = PosFin;
+	Mossa.Pezzo = Piece;
+
+
+	// Aggiungi l'oggetto appena creato all'array Mosse
+	Mosse.Add(Mossa);
+
+	FString NomePezzo = Piece->GetName();
+
+
+	GameMode->AddMossa(NomePezzo, Mossa.PosFin);
+
+}
+
+// svuota la scroolbox
+void AChessboard::ClearScrollBox()
+{
+	 GloXC = 7;
+	 GloYC = 8;
+
+	 GloXG = 7;
+	 GloYG = 11;
+
+
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	if ( Mosse.IsValidIndex(0))
+	{
+		while (Mosse.Num() > 0)
+		{
+			 Mosse.RemoveAt(0); // Rimuovi il primo elemento dall'array
+		}
+	}
+	GameMode->HUD->ScrollBox->ClearChildren();
+	 
+}
+
+// Funzione per calcolare la differenza di peso tra due oggetti della tua classe
+int AChessboard::weightDifference(int32 PesoMangiante, int32 PesoMangiato)
+{
+	return PesoMangiante - PesoMangiato;
+}
+
+int AChessboard::partition(int low, int high)
+{
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	int pivot = weightDifference(GameMode->GField->Mangiate[high].PesoMangiante, GameMode->GField->Mangiate[high].PesoMangiato);
+	int i = low - 1;
+
+	for (int j = low; j <= high - 1; j++) {
+		if (weightDifference(GameMode->GField->Mangiate[j].PesoMangiante, GameMode->GField->Mangiate[j].PesoMangiato) < pivot) {
+			i++;
+			std::swap(GameMode->GField->Mangiate[i], GameMode->GField->Mangiate[j]);
+		}
+	}
+	std::swap(GameMode->GField->Mangiate[i + 1], GameMode->GField->Mangiate[high]);
+	return (i + 1);
+
+
+}
+
+// Funzione ricorsiva di ordinamento rapido
+void AChessboard::quickSort(int low, int high) {
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	if (low < high) {
+		int pi = partition(low, high);
+		quickSort(low, pi - 1);
+		quickSort(pi + 1, high);
+	}
+}
 
 void AChessboard::OnConstruction(const FTransform& Transform)
 {
@@ -213,43 +490,71 @@ void AChessboard::OnConstruction(const FTransform& Transform)
 	NormalizedCellPadding = FMath::RoundToDouble(((TileSize + CellPadding) / TileSize) * 100) / 100;
 
 }
-
 // Called when the game starts or when spawned
 void AChessboard::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	GenerateField();
 }
-
 
 void AChessboard::ResetField()
 {
 	for (ATile* Obj : TileArray)
 	{
-		Obj->SetTileStatus(NOT_ASSIGNED, ETileStatus::EMPTY);
+		//voglio distruggere tutti gli oggetti
+		if (Obj->GetPiece()!= nullptr)
+		{
+			Obj->GetPiece()->Destroy();
+		}
+		Obj->Destroy();
+		
 	}
+	ResetLegalMoves();
+	TileArray.Empty();
+	TileMap.Empty();
+	Mosse.Empty();
+	Mangiate.clear();
+
+	for (APiece* Pezzo : PezziBianchiMangiati)
+	{
+		Pezzo->Destroy();
+	}
+	for (APiece* Pezzo : PezziNeriMangiati)
+	{
+		Pezzo->Destroy();
+	}
+	PezziBianchiMangiati.Empty();
+	PezziNeriMangiati.Empty();
+
+
 	OnReset.Broadcast();
 
-	//AChessboard* Chessboard = Cast<AChessboard>(GetWorld()->GetAuthGameMode());
-	/*GameMode->IsGameOver = false;
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	GameMode->IsGameOver = false;
 	GameMode->MoveCounter = 0;
 	GameMode->ChoosePlayerAndStartGame();
-	*/
+	
 }
 
 void AChessboard::GenerateField()
 {
+
+	//UChessBuild* ChessBuild2 = new UChessBuild();
+	UChessBuild* Chessbuild3 = NewObject<UChessBuild>();
+
+	//cast chessbuild
+	//UChessBuild* ChessBuild = Cast<UChessBuild>(GetWorld()->GetAuthGameMode());
+
 	for (int32 x = 0; x < BoardSize; x++)
 	{
 		for (int32 y = 0; y < BoardSize; y++)
 		{
 
-
 			FVector Location = AChessboard::GetRelativeLocationByXYPosition(x, y);
 			Location.Z = 0;
 			ATile* Obj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
-
-
 
 			if ((x+y)%2==0)
 			{
@@ -271,147 +576,47 @@ void AChessboard::GenerateField()
 
 			if (x == 0 || x == 7 || x==1 || x==6 )
 			{
-				GeneratePiece(x, y);	
+				GeneratePiece(x, y);
+				//Chessbuild3->GeneratePiece(x, y);
 			}
-			
-
 			
 		}
 	}
 
 }
 
-void AChessboard::GeneratePiece(int32 x, int32 y)
+FVector2D AChessboard::TrovaRe(int32 Prop)
 {
-	const float PawnScale = TileSize / 180.0f;
-	//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
-	FVector Position = AChessboard::GetRelativeLocationByXYPosition(x, y);
-	Position.Z = 5;
-	int32 BW = 0;
-	APiece* PieceObj =nullptr;
-
-	if (x == 0 && y == 4)
+	for (auto& CurrTile : TileMap)
 	{
-
-
-		PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(100);
-	}
-
-	else if (x == 7 && y == 4)
-	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/KingMat.KingMat")));
-
-
-		 PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
-		//cambio colore per il re nero
-		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
-		MeshComponent->SetMaterial(0, NewMaterial);
-		BW = 1;
-		PieceObj->SetWeight(100);
-
-	}
-
-	else if (x == 0 && y == 3)
-	{
-
-		PieceObj = GetWorld()->SpawnActor<AQueen>(AQueen::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(50);
-	
-	}
-	else if (x == 7 && y == 3)
-	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/QueenMat.QueenMat")));
-
-		PieceObj = GetWorld()->SpawnActor<AQueen>(AQueen::StaticClass(), Position, FRotator::ZeroRotator);
-		//cambio colore per il re nero
-		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
-		MeshComponent->SetMaterial(0, NewMaterial);
-		BW = 1;
-		PieceObj->SetWeight(50);
-	}
-	else if (x == 0 && (y == 1 || y == 6))
-	{
-
-		PieceObj = GetWorld()->SpawnActor<AHorse>(AHorse::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(40);
-	}
-	else if (x == 7 && (y == 1 || y == 6))
-	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/HorseMat.HorseMat")));
-
-		PieceObj = GetWorld()->SpawnActor<AHorse>(AHorse::StaticClass(), Position, FRotator::ZeroRotator);
-		//cambio colore per il re nero
-		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
-		MeshComponent->SetMaterial(0, NewMaterial);
-		BW = 1;
-		PieceObj->SetWeight(40);
-	}
-	else if (x == 1)
-	{
-
-		PieceObj = GetWorld()->SpawnActor<APawnPed>(APawnPed::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(10);
-	}
-	else if (x == 6)
-	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/PawnMat.PawnMat")));
-
-		PieceObj = GetWorld()->SpawnActor<APawnPed>(APawnPed::StaticClass(), Position, FRotator::ZeroRotator);
-		//cambio colore per il re nero
-		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
-		MeshComponent->SetMaterial(0, NewMaterial);
-		BW = 1;
-		PieceObj->SetWeight(10);
-	}
-	
-	else if (x == 0 && (y == 0 || y == 7))
-	{
-		PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(20);
-	}
-	else if (x == 7 && (y == 0 || y == 7))
-	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/RookMat.RookMat")));
-
-		PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
-		//cambio colore per il re nero
-		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
-		MeshComponent->SetMaterial(0, NewMaterial);
-		BW = 1;
-		PieceObj->SetWeight(20);
+		APiece* Obj = CurrTile.Value->GetPiece();
+		if(CurrTile.Value->GetTileOwner() == Prop)
+		{ 
+			if (Obj->GetTipoPedina() == "RE" )
+			{
+				return CurrTile.Key;
+			}
 		}
-
-	else if (x == 0 && (y == 2 || y == 5))
-	{
-
-		PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
-		PieceObj->SetWeight(30);
 	}
-	else if (x == 7 && (y == 2 || y == 5))
+	return FVector2D(-1, -1);
+
+}
+
+
+
+
+
+void AChessboard::RigeneraTileArray()
+{
+	TileArray.Empty();
+	
+	for (auto& CurrTile : TileMap)
 	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/BishopMat.BishopMat")));
+		ATile* Obj = CurrTile.Value;
 
-		PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
-		//cambio colore per il re nero
-		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
-		MeshComponent->SetMaterial(0, NewMaterial);
-		BW = 1;
-		PieceObj->SetWeight(30);
+		TileArray.Add(Obj);
+
 	}
-
-	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));
-	PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
-	PieceObj->SetGridPosition(x, y);
-	PieceObj->SetCurrentTile(Tile);
-
-	// Applica la rotazione dopo che l'oggetto è stato creato con successo
-	FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
-	PieceObj->AddActorLocalRotation(Rotation);
-
-
-	(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(BW, ETileStatus::OCCUPIED);
-	(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
 
 }
 
@@ -443,19 +648,315 @@ inline bool AChessboard::IsValidPosition(const FVector2D Position) const
 	return 0 <= Position[0] && Position[0] < BoardSize && 0 <= Position[1] && Position[1] < BoardSize;
 }
 
-
 ATile* AChessboard::GetTileAtPosition(const FVector2D & Position) const {
+	FVector2D coordinate;  
 	// Itera attraverso tutte le tile nel GField
-	for (const auto& Tile : TileArray) {
+	
+	for(int32 i=0; i<TileArray.Num(); i++)
+	{
+		coordinate = FVector2D(TileArray[i]->GetGridPosition().X, TileArray[i]->GetGridPosition().Y);
 		// Controlla se la posizione della tile corrente corrisponde alla posizione data
-		if (FVector2D(Tile->GetActorLocation()) == Position) {
-			return Tile; // Restituisci la tile corrente
+		UE_LOG(LogTemp, Warning, TEXT("coordinate %f %f"), coordinate.X, coordinate.Y);
+		if (coordinate == Position)
+		{
+			return TileArray[i]; // Restituisci la tile corrente
 		}
 	}
-
+	
 	return nullptr; // Se non è stata trovata una tile corrispondente, restituisci nullptr
 }
 
+
+
+void AChessboard::GeneratePiece(int32 x, int32 y)
+{
+	
+	const float PawnScale = TileSize / 180.0f;
+	//salvo in location la posizione della pedina con GetRelativeLocationbyXYPosition
+	FVector Position = GetRelativeLocationByXYPosition(x, y);
+	Position.Z = 5;
+	int32 BW = 0;
+	APiece* PieceObj = nullptr;
+
+	if (x == 0 && y == 4)
+	{
+		PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
+		PieceObj->SetWeight(100);
+		PieceObj->SetName("RE_W");
+		PieceObj->SetTipoPedina("RE");
+	}
+
+	else if (x == 7 && y == 4)
+	{
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/KingMat.KingMat")));
+
+
+		PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);
+		//cambio colore per il re nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+		BW = 1;
+		PieceObj->SetWeight(100);
+		PieceObj->SetName("RE_B");
+		PieceObj->SetTipoPedina("RE");
+	}
+
+	else if (x == 0 && y == 3)
+	{
+		PieceObj = CreaRegina(0, Position);
+
+
+	}
+	else if (x == 7 && y == 3)
+	{
+		PieceObj = CreaRegina(1, Position);
+		BW = 1;
+
+	}
+
+	else if (x == 0 && (y == 1 || y == 6))
+	{
+
+		PieceObj = CreaCavallo(0, Position, y);
+	}
+	else if (x == 7 && (y == 1 || y == 6))
+	{
+		PieceObj = CreaCavallo(1, Position, y);
+		BW = 1;
+	}
+	else if (x == 1)
+	{
+
+		PieceObj = CreaPedone(0, Position);
+	}
+	else if (x == 6)
+	{
+		PieceObj = CreaPedone(1, Position);
+		BW = 1;
+	}
+
+	else if (x == 0 && (y == 0 || y == 7))
+	{
+		PieceObj = CreaTorre(0, Position, y);
+	}
+	else if (x == 7 && (y == 0 || y == 7))
+	{
+		PieceObj = CreaTorre(1, Position, y);
+		BW = 1;
+	}
+
+
+	else if (x == 0 && (y == 2 || y == 5))
+	{
+
+		PieceObj = CreaAlfiere(0, Position, y);
+	}
+	else if (x == 7 && (y == 2 || y == 5))
+	{
+		PieceObj = CreaAlfiere(1, Position, y);
+		BW = 1;
+	}
+
+
+	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));
+	PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
+	PieceObj->SetGridPosition(x, y);
+	PieceObj->SetCurrentTile(Tile);
+
+	// Applica la rotazione dopo che l'oggetto è stato creato con successo
+	FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
+	PieceObj->AddActorLocalRotation(Rotation);
+
+
+	(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(BW, ETileStatus::OCCUPIED);
+	(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
+
+}
+
+APiece* AChessboard::CreaCavallo(int32 Colore, FVector Position, int32 y)
+{
+	APiece* PieceObj = nullptr;
+	PieceObj = GetWorld()->SpawnActor<AHorse>(AHorse::StaticClass(), Position, FRotator::ZeroRotator);
+	PieceObj->SetWeight(40);
+	PieceObj->SetTipoPedina("CAVALLO");
+
+	if (Colore == 0) //bianco
+	{
+
+		if (y == 1)
+		{
+			PieceObj->SetName("CAVALLO_W1");
+		}
+		else
+		{
+			PieceObj->SetName("CAVALLO_W2");
+		}
+
+
+	}
+	else //nero
+	{
+
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/HorseMat.HorseMat")));
+
+		//cambio colore in nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+
+		if (y == 1)
+		{
+			PieceObj->SetName("CAVALLO_B1");
+		}
+		else
+		{
+			PieceObj->SetName("CAVALLO_B2");
+		}
+
+
+
+	}
+
+	return PieceObj;
+}
+
+APiece* AChessboard::CreaPedone(int32 Colore, FVector Position)
+{
+	
+	APiece* PieceObj = nullptr;
+	PieceObj = GetWorld()->SpawnActor<APawnPed>(APawnPed::StaticClass(), Position, FRotator::ZeroRotator);
+	PieceObj->SetWeight(10);
+	PieceObj->SetTipoPedina("PEDONE");
+	FVector2d Posizione = GetXYPositionByRelativeLocation(Position);
+	std::string newName = "";
+	if (Colore == 0) //bianco
+	{
+		newName = "PEDONE_W" + std::to_string(static_cast<int>(Posizione.Y));
+
+	}
+	else //nero
+	{
+
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/PawnMat.PawnMat")));
+		//cambio colore in nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+		newName = "PEDONE_B" + std::to_string(static_cast<int>(Position.Y));
+
+
+	}
+	// Converti std::string in FString usando FString::Printf
+	FString fString;
+
+	PieceObj->SetName(fString.Printf(TEXT("%s"), *FString(newName.c_str())));
+
+	return PieceObj;
+}
+
+APiece* AChessboard::CreaTorre(int32 Colore, FVector Position, int32 y)
+{
+	APiece* PieceObj = nullptr;
+	PieceObj = GetWorld()->SpawnActor<ARook>(ARook::StaticClass(), Position, FRotator::ZeroRotator);
+	PieceObj->SetWeight(20);
+	PieceObj->SetTipoPedina("TORRE");
+
+	if (Colore == 0) //bianco
+	{
+
+		if (y == 0)
+		{
+			PieceObj->SetName("TORRE_W1");
+		}
+		else
+		{
+			PieceObj->SetName("TORRE_W2");
+		}
+
+	}
+	else //nero
+	{
+
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/RookMat.RookMat")));
+
+		//cambio colore per in nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+		if (y == 0)
+		{
+			PieceObj->SetName("TORRE_B1");
+		}
+		else
+		{
+			PieceObj->SetName("TORRE_B2");
+		}
+
+
+	}
+
+	return PieceObj;
+}
+
+APiece* AChessboard::CreaAlfiere(int32 Colore, FVector Position, int32 y)
+{
+	APiece* PieceObj = nullptr;
+	PieceObj = GetWorld()->SpawnActor<ABishop>(ABishop::StaticClass(), Position, FRotator::ZeroRotator);
+	PieceObj->SetWeight(30);
+	PieceObj->SetTipoPedina("ALFIERE");
+
+	if (Colore == 0) //bianco
+	{
+		if (y == 2)
+		{
+			PieceObj->SetName("ALFIERE_W1");
+		}
+		else
+		{
+			PieceObj->SetName("ALFIERE_W2");
+		}
+
+
+	}
+	else //nero
+	{
+
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/BishopMat.BishopMat")));
+		//cambio colore per in nero
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+
+
+		if (y == 2)
+		{
+			PieceObj->SetName("ALFIERE_B1");
+		}
+		else
+		{
+			PieceObj->SetName("ALFIERE_B2");
+		}
+
+	}
+
+	return PieceObj;
+}
+
+APiece* AChessboard::CreaRegina(int32 Colore, FVector Position)
+{
+	APiece* PieceObj = GetWorld()->SpawnActor<AQueen>(AQueen::StaticClass(), Position, FRotator::ZeroRotator);
+	PieceObj->SetWeight(50);
+	PieceObj->SetName("REGINA_W");
+	PieceObj->SetTipoPedina("REGINA");
+
+	if (Colore == 1)
+	{
+		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/QueenMat.QueenMat")));
+		UStaticMeshComponent* MeshComponent = PieceObj->FindComponentByClass<UStaticMeshComponent>();
+		MeshComponent->SetMaterial(0, NewMaterial);
+		PieceObj->SetName("REGINA_B");
+	}
+	return PieceObj;
+}
+
+
+ 
 
 
 

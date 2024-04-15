@@ -4,8 +4,14 @@
 #include "Chessboard.h"
 #include "ChessPlayerController.h"
 #include "HumanPlayer.h" 
-#include "EngineUtils.h"  
+#include "ChessWidget.h"
 #include <RandomPlayer.h>
+#include "EngineUtils.h" 
+
+
+
+
+
 
 AChessGameMode::AChessGameMode()
 {
@@ -13,14 +19,26 @@ AChessGameMode::AChessGameMode()
 	DefaultPawnClass = AHumanPlayer::StaticClass();
 	FieldSize = 8;
 	// get the game instance reference
-	GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	UChessGameInstance* GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 }
 
 
 void AChessGameMode::BeginPlay()
 {
+
 	Super::BeginPlay();
+
+
+	HUD = CreateWidget<UChessWidget>(GetGameInstance(), ChessWidgetClass);
+
+	if (HUD)
+	{
+		HUD->AddToViewport(0);
+	}
+
+
+
 
 	IsGameOver = false;
 
@@ -51,9 +69,7 @@ void AChessGameMode::BeginPlay()
 	// Random Player
 	auto* AI = GetWorld()->SpawnActor<ARandomPlayer>(FVector(), FRotator());
 
-	// MiniMax Player
-	//auto* AI = GetWorld()->SpawnActor<ATTT_MinimaxPlayer>(FVector(), FRotator());
-
+	 
 	// AI player = 1
 	Players.Add(AI);
 
@@ -112,10 +128,30 @@ void AChessGameMode::TurnNextPlayer(int32 Player)
 }
   
 
+
 void AChessGameMode::OnWin()
 {
+	UChessGameInstance* GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	AChessboard* Chessboard = Cast<AChessboard>(GField);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, TEXT("You Win!"));
-	GameInstance->SetTurnMessage(TEXT("Human Wins!"));
-	GameInstance->IncrementScoreHumanPlayer();
+	IsGameOver = true;
+
+	if (Winner == 1)
+	{
+		GameInstance->SetTurnMessage(TEXT("AI Wins!"));
+		GameInstance->IncrementScoreAiPlayer();
+	}
+	else
+	{
+		GameInstance->SetTurnMessage(TEXT("Human Wins!"));
+		GameInstance->IncrementScoreHumanPlayer();
+	}
+
+
 }
+
+void AChessGameMode::AddMossa(FString Mossa, FVector2D PosFin)
+{
+	HUD->AddMossa(Mossa, PosFin);
+}
+ 

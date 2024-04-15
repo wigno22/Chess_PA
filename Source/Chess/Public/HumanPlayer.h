@@ -57,6 +57,8 @@ public:
 	UFUNCTION()
 	void OnClick();
 
+	bool ControlloMossaScacco(FVector2D CurrTile);
+
 	void OnClickPers(ATile* CurrTile);
 
 };
