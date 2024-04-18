@@ -36,7 +36,7 @@ public:
 
 	//funzione per aggiungere una mossa al widget
 	UFUNCTION(BlueprintCallable)
-	void AddMossa(FString Mossa, FVector2D PosFin);
+	void AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 OwnerPed);
 
 	 
 

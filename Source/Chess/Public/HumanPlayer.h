@@ -32,6 +32,9 @@ public:
 	//puntatore a pezzo selezionato
 	APiece* CurrPieceSelected ;
 
+	//given a position returns a tile
+	UPROPERTY(Transient)
+	TMap<FVector2D, ATile*> TileMap;
 
 
 protected:
@@ -57,7 +60,7 @@ public:
 	UFUNCTION()
 	void OnClick();
 
-	bool ControlloMossaScacco(FVector2D CurrTile);
+	bool ControlloMossaScacco(FVector2D CurrTile, int32 ControlloGiocatore);
 
 	void OnClickPers(ATile* CurrTile);
 

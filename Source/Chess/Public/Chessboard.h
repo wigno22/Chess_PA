@@ -27,7 +27,7 @@ class CHESS_API AChessboard : public AActor
 public:	
 
 	int32 GloXC = 7;
-	int32 GloYC = 8;
+	int32 GloYC = 9;
 
 	int32 GloXG = 7;
 	int32 GloYG = 11;
@@ -39,6 +39,8 @@ public:
 		FVector2D PosInit;
 		FVector2D PosFin;
 		APiece* Pezzo;
+		int32 NumeroMossa;
+		int32 Player;
 	};
 
  //classe per tener traccia delle mangiate
@@ -57,13 +59,15 @@ public:
 
 	//voglio un array della classe Spostato per tenere traccia delle mosse
 	TArray<Spostato> Mosse;
+
 	std::vector<Mangiata> Mangiate;
+
 	TArray<Mangiata> MangiateNew;
 
 	//voglio un array che tenga conto delle pedine bianche
-	TArray<APiece*> PezziBianchiMangiati;
+	//TArray<APiece*> PezziBianchiMangiati;
 	//voglio un array che tenga conto delle pedine nere
-	TArray<APiece*> PezziNeriMangiati;
+	//TArray<APiece*> PezziNeriMangiati;
 	
 
 	// Sets default values for this actor's properties
@@ -138,13 +142,16 @@ public:
 	FVector2D TrovaRe(int32 Owner);
 
 
-	void RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Pezzo);
+	void RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Pezzo, int32 PieceOwner);
 
 	APiece* PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiece* Piece);
 
 	//metodo per fare la mossa
 	void DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer);
 
+	void ResetMossa(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer);
+
+	
 	//metodo per resettare mosse legali
 	void ResetLegalMoves();
 

@@ -49,9 +49,7 @@ void ARandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 std::vector<AChessboard::Mangiata> ARandomPlayer::GiocatoreAIScacco(int32 Player)
 {
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	RilevaPezzi(Player);
-	 
 	return SimulaMosseScacco(Player);
 	 
 }
@@ -62,15 +60,13 @@ std::vector<AChessboard::Mangiata> ARandomPlayer::SimulaMosseScacco(int32 Player
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	bool TrovataMossa = false;
 	TArray<FVector2D> Mosselegali;
+
 	while (GameMode->GField->Mangiate.size() > 0)
 	{
 		GameMode->GField->Mangiate.erase(GameMode->GField->Mangiate.begin() + 0); // Rimuovi il primo elemento dall'array
 	}
 
-	while (GameMode->GField->MangiateNew.Num() > 0)
-	{
-		GameMode->GField->MangiateNew.RemoveAt(0); // Rimuovi il primo elemento dall'array
-	}
+
 
 	for (APiece* Piece : PezziAI)
 	{
@@ -88,19 +84,8 @@ std::vector<AChessboard::Mangiata> ARandomPlayer::SimulaMosseScacco(int32 Player
 
 	}
 
+	 
 
-	if (TrovataMossa)
-	{
-		int32 Posizione = 0;
-		Posizione = GameMode->GField->Mangiate.size();
-
-
-		// Ordinamento dell'array utilizzando l'algoritmo di ordinamento rapido
-		GameMode->GField->quickSort(0, GameMode->GField->Mangiate.size() - 1);
-
-		
-
-	}
 
 	return GameMode->GField->Mangiate;
 }

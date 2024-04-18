@@ -34,7 +34,7 @@ void AChessGameMode::BeginPlay()
 
 	if (HUD)
 	{
-		HUD->AddToViewport(0);
+		HUD->AddToViewport(1);
 	}
 
 
@@ -86,7 +86,7 @@ void AChessGameMode::ChoosePlayerAndStartGame()
 		Players[i]->PlayerNumber = i;
 		
 	}
-	MoveCounter += 1;
+	
 	//Players[CurrentPlayer]->OnTurn();
 }
  
@@ -106,7 +106,7 @@ void AChessGameMode::TurnNextPlayer(int32 Player)
 	//prendo attributi gamemode qui per usarli nei due if
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
-	MoveCounter += 1;
+	//MoveCounter += 1;
 	CurrentPlayer = Player;
 
 
@@ -150,8 +150,8 @@ void AChessGameMode::OnWin()
 
 }
 
-void AChessGameMode::AddMossa(FString Mossa, FVector2D PosFin)
+void AChessGameMode::AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 OwnerPed)
 {
-	HUD->AddMossa(Mossa, PosFin);
+	HUD->AddMossa(NamePiece, PosFinale, ID, OwnerPed);
 }
  

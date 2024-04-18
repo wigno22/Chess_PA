@@ -11,6 +11,8 @@
 /**
  * 
  */
+class UChessWidget;
+
 UCLASS()
 class CHESS_API UMyWidget : public UUserWidget
 {
@@ -24,6 +26,10 @@ class CHESS_API UMyWidget : public UUserWidget
 	 UPROPERTY(meta = (BindWidget)) 
 	 UTextBlock* Text;
 
+	 
+
 	 UFUNCTION(BlueprintCallable)
 	 void HandleButtonClick();
+	 void SetData(FString Mossa, FVector2D PosFin, int32 ID, int32 OwnerPed);
+
 };

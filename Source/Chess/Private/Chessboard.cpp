@@ -78,9 +78,12 @@ bool  AChessboard::ColorLegalMovesRE(TArray<FVector2D> MosseLegali, ATile* TileD
 		int32 ProprietarioTile = (*TileMap.Find(MosseLegali[i]))->GetTileOwner();
 
 
-		if (ProprietarioTile == 0)
+		if (ProprietarioTile != -1 && ProprietarioTile == GameMode->CurrentPlayer)
 		{
-			/*TileMangiato = (*TileMap.Find(MosseLegali[i]));
+			TileMangiato = (*TileMap.Find(MosseLegali[i]));
+
+			TileMangiato->StaticMeshComponent->SetMaterial(0, RedMaterial);
+
 
 			PedinaMangiata.PosPezzoMangiante = TileDef->GetGridPosition();
 			PedinaMangiata.PosPezzoMangiato = MosseLegali[i];
@@ -90,7 +93,30 @@ bool  AChessboard::ColorLegalMovesRE(TArray<FVector2D> MosseLegali, ATile* TileD
 			PedinaMangiata.PesoMangiato = TileMangiato->GetPiece()->GetWeight();
 			PedinaMangiata.Player = GameMode->CurrentPlayer;
 
-			Mangiate.push_back(PedinaMangiata);*/
+			//aggiorno array che tiene conto delle pedine mangiate
+			Mangiate.push_back(PedinaMangiata);
+
+			//ResetLegalMoves();
+			// 
+			// 
+			for (ATile* Obj : TileArray)
+			{
+				 
+				FVector2D Position = Obj->GetGridPosition();
+				int32 x = static_cast<int32>(Position.X);
+				int32 y = static_cast<int32>(Position.Y);
+
+				//resetto colore tile
+				if ((x + y) % 2 == 0)
+				{
+					Obj->StaticMeshComponent->SetMaterial(0, WhiteMaterial);
+				}
+				else
+				{
+					Obj->StaticMeshComponent->SetMaterial(0, BlackMaterial);
+				}
+			}
+
 
 			passa = true;
 			
@@ -110,6 +136,9 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef
 	ATile* TileMangiato = nullptr;
 	bool passa = false;
 	
+	
+
+
 	Mangiata PedinaMangiata{};
 
 	//ciclo per colorare le mosse legali
@@ -126,8 +155,7 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef
 
 			TileMangiato->StaticMeshComponent->SetMaterial(0, RedMaterial);
 			
-			if (GameMode->CurrentPlayer == 1)
-			{
+			
 				PedinaMangiata.PosPezzoMangiante = TileDef->GetGridPosition();
 				PedinaMangiata.PosPezzoMangiato = MosseLegali[i];
 				PedinaMangiata.PezzoMangiante = TileDef->GetPiece();
@@ -139,9 +167,9 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef
 				//aggiorno array che tiene conto delle pedine mangiate
 				Mangiate.push_back(PedinaMangiata);
 						
-				ResetLegalMoves();
+				//ResetLegalMoves();
 				passa = true;
-			}
+			
 		}
 
 	}
@@ -179,7 +207,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 
 	APiece* PieceFin = (*TileMap.Find(PosFin))->GetPiece();
 
-	
+	//Sposto le pedine nere o bianche mangiate fuori scacchiera
 
 	if ((*TileMap.Find(PosFin))->GetTileOwner() != (*TileMap.Find(PosInit))->GetTileOwner())
 	{
@@ -189,7 +217,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 		{
 
 			//aggiungo a pezzi mangiati il pezzo mangiato
-			PezziNeriMangiati.Add(PieceFin);
+			//PezziNeriMangiati.Add(PieceFin);
 
 			//prendo il pezzo e lo metto fuori scacchiera
 			PieceFin->SetGridPosition(GloXC, GloYC);
@@ -203,6 +231,13 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			GloXC = GloXC - 1;
 			Position.Z = 5;
 			PieceFin->SetActorLocation(Position);
+			//trasformo Position in fvector2d
+			FVector2D Posizione = FVector2D(GloXG, GloYG);
+			(*TileMap.Find(Posizione))->SetPiece(PieceFin);
+			(*TileMap.Find(Posizione))->SetTileStatus(0, ETileStatus::OCCUPIED);
+
+			RegistraMosse(PosFin, Posizione, PieceFin, 1);
+
 
 			if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
 			{
@@ -218,6 +253,8 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			(*TileMap.Find(PosFin))->Piece = nullptr;
 			(*TileMap.Find(PosFin))->SetTileStatus(-1, ETileStatus::EMPTY);
 
+			
+
 		}
 		else if ((*TileMap.Find(PosFin))->GetTileOwner() == 0)
 		{
@@ -226,7 +263,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			PieceFin->SetGridPosition(GloXG, GloYG);
 
 			//aggiungo a pezzi mangiati il pezzo mangiato
-			PezziBianchiMangiati.Add(PieceFin);
+			//PezziBianchiMangiati.Add(PieceFin);
 
 			if (GloXG < 0)
 			{
@@ -237,9 +274,16 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 
 			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXG, GloYG);
 			Position.Z = 5;
-			
+
 			GloXG = GloXG - 1;
 			PieceFin->SetActorLocation(Position);
+
+			FVector2D Posizione = FVector2D(GloXG, GloYG);
+			(*TileMap.Find(Posizione))->SetPiece(PieceFin);
+			(*TileMap.Find(Posizione))->SetTileStatus(1, ETileStatus::OCCUPIED);
+
+			RegistraMosse(PosFin, Posizione, PieceFin, 0);
+
 
 			if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
 			{
@@ -269,7 +313,8 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 	Position.Z = 5;
 	Piece->SetActorLocation(Position);
 
-	RegistraMosse(PosInit, PosFin, Piece);
+	GameMode->MoveCounter += 1;
+	RegistraMosse(PosInit, PosFin, Piece, CurrentPlayer);
 	
 	
 
@@ -306,6 +351,56 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 	
 }
 
+
+
+//funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
+void AChessboard::ResetMossa(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Il pulsante è stato cliccato!"));
+	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
+
+	//pezzo nella posizione finale che dovrò spostare nella posizione iniziale
+	APiece* PieceFin = (*TileMap.Find(PosFin))->GetPiece();
+
+	//controllare le mosse che sono state mangiate (rimuovere dagli array delle pedine mangiate)
+
+	//pezzo nella posizione iniziale che dovrò spostare nella posizione finale	
+	APiece* Piece = (*TileMap.Find(PosInit))->GetPiece();
+
+	//pezzo della finale lo sposto nell'iniziale
+	Piece->SetGridPosition(PosFin.X, PosFin.Y);
+	FVector Position = AChessboard::GetRelativeLocationByXYPosition(PosFin.X, PosFin.Y);
+	Position.Z = 5;
+	Piece->SetActorLocation(Position);
+
+	
+
+
+	// sistemo attributi della tile iniziale e finale 
+	(*TileMap.Find(PosFin))->Piece = Piece;
+	(*TileMap.Find(PosInit))->Piece = nullptr;
+
+	//questo non funziona se ho mangiato con la mossa
+	(*TileMap.Find(PosFin))->SetTileStatus(CurrentPlayer, ETileStatus::OCCUPIED);
+	(*TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
+
+	Piece->SetCurrentTile((*TileMap.Find(PosFin)));
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
 APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiece* Piece)
 {
 	//UChessBuild* ChessBuild = Cast<UChessBuild>(GetWorld()->GetAuthGameMode());
@@ -319,7 +414,7 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 	PosFin.X = -9;
 	PosFin.Y = -9;
 	// aggiungo nella lista delle mosse la posizione -9,-9
-	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
+	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece(), OwnerPezzo);
 
 	
 
@@ -397,13 +492,13 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 	// aggiungo nella lista delle mosse la creazione della regina con posizione -9,-9 -> pos vera
 	PosInit.X = -9;
 	PosInit.Y = -9;
-	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosFin))->GetPiece());
+	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosFin))->GetPiece(), OwnerPezzo);
 	//RigeneraTileArray();
 
 	return PieceObj;
 }
 
-void AChessboard::RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Piece)
+void AChessboard::RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Piece, int32 PieceOwner)
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
@@ -412,15 +507,16 @@ void AChessboard::RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Pie
 	Mossa.PosInit = PosInit;
 	Mossa.PosFin = PosFin;
 	Mossa.Pezzo = Piece;
-
+	Mossa.Player = PieceOwner;
+	Mossa.NumeroMossa = GameMode->MoveCounter;
 
 	// Aggiungi l'oggetto appena creato all'array Mosse
 	Mosse.Add(Mossa);
 
 	FString NomePezzo = Piece->GetName();
+	
 
-
-	GameMode->AddMossa(NomePezzo, Mossa.PosFin);
+	GameMode->AddMossa(NomePezzo, PosFin, Mosse.Num(), Mossa.Player);
 
 }
 
@@ -516,7 +612,7 @@ void AChessboard::ResetField()
 	Mosse.Empty();
 	Mangiate.clear();
 
-	for (APiece* Pezzo : PezziBianchiMangiati)
+	/*for (APiece* Pezzo : PezziBianchiMangiati)
 	{
 		Pezzo->Destroy();
 	}
@@ -526,7 +622,7 @@ void AChessboard::ResetField()
 	}
 	PezziBianchiMangiati.Empty();
 	PezziNeriMangiati.Empty();
-
+	*/
 
 	OnReset.Broadcast();
 
@@ -577,11 +673,49 @@ void AChessboard::GenerateField()
 			if (x == 0 || x == 7 || x==1 || x==6 )
 			{
 				GeneratePiece(x, y);
-				//Chessbuild3->GeneratePiece(x, y);
+				
 			}
 			
 		}
 	}
+
+	for (int32 j = 7; j>=0 ; j--)
+	{
+		for (int32 k = 9; k < 11 ;k++)
+		{
+			FVector Location = AChessboard::GetRelativeLocationByXYPosition(j, k);
+			Location.Z = 0;
+			ATile* Obj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
+
+			Obj->Piece = nullptr;
+
+			const float TileScale = TileSize / 100;
+			Obj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
+			Obj->SetGridPosition(j, k);
+			
+			TileMap.Add(FVector2D(j, k), Obj);
+		}
+	}
+
+	for (int32 a = 7; a >=0 ; a--)
+	{
+		for (int32 b = 11 ; b < 13; b++)
+		{
+			FVector Location = AChessboard::GetRelativeLocationByXYPosition(a, b);
+			Location.Z = 0;
+			ATile* Obj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
+
+			Obj->Piece = nullptr;
+
+			const float TileScale = TileSize / 100;
+			Obj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
+			Obj->SetGridPosition(a, b);
+			
+			TileMap.Add(FVector2D(a, b), Obj);
+		}
+	}
+
+
 
 }
 
@@ -601,9 +735,6 @@ FVector2D AChessboard::TrovaRe(int32 Prop)
 	return FVector2D(-1, -1);
 
 }
-
-
-
 
 
 void AChessboard::RigeneraTileArray()
@@ -667,7 +798,6 @@ ATile* AChessboard::GetTileAtPosition(const FVector2D & Position) const {
 }
 
 
-
 void AChessboard::GeneratePiece(int32 x, int32 y)
 {
 	
@@ -688,7 +818,13 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 	else if (x == 7 && y == 4)
 	{
-		UMaterial* NewMaterial = Cast<UMaterial>(StaticLoadObject(UMaterial::StaticClass(), NULL, TEXT("/Game/Materials/KingMat.KingMat")));
+		UMaterial* NewMaterial = Cast<UMaterial>(
+			StaticLoadObject(
+				UMaterial::StaticClass(),
+				NULL,
+				TEXT("/Game/Materials/KingMat.KingMat")
+			)
+		);
 
 
 		PieceObj = GetWorld()->SpawnActor<AKing>(AKing::StaticClass(), Position, FRotator::ZeroRotator);

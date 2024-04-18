@@ -106,7 +106,7 @@ void APiece::SetCurrentTile(ATile* NewTile)
 
 void APiece::SetGridPosition(const double InX, const double InY)
 {
-	GridPosition.Set(InX, InY);
+   	GridPosition.Set(InX, InY);
 }
 
 FVector2D APiece::GetGridPosition()

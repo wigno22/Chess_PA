@@ -34,18 +34,12 @@ public:
 
 	// Funzione che aggiunge una mossa al scrollbox
 	 UFUNCTION(BlueprintCallable)
-	 void AddMossa(FString Mossa, FVector2D PosFin);
+	 void AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 Owner);
 
+	 // Funzione che rimuovere una mossa al scrollbox
+	 UFUNCTION(BlueprintCallable)
+	 void RemoveMossa(int32 ID);
 	
-
-	 // Crea la funzione di gestione degli eventi di clic del pulsante
-	 UFUNCTION(BlueprintCallable)
-	 void HandleButtonClick();
-		
-	 
-	 UFUNCTION(BlueprintCallable)
-	 void HandleScroll(float ScrollOffset);
-
 	
 
 };
