@@ -14,6 +14,8 @@ void UMyWidget::HandleButtonClick()
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 	UChessGameInstance* GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
+	APiece* PieceQ = nullptr;
+	ATile* Tiletemp = nullptr;
 	//devo recuperare il testo del pulsante cliccato
 	FText TestoButtonText = Button->GetAccessibleText();
 	//CONVERTO FTEXT IN STRING
@@ -35,9 +37,22 @@ void UMyWidget::HandleButtonClick()
 	}
 	for (int32 i = GameMode->GField->Mosse.Num()-1; i >= NumMossa; i--)
 	{
+
 		
+		if (GameMode->GField->Mosse[i].PosInit.Y == 13)
+		{
+			GameMode->GField->DistruggiPezzo(GameMode->GField->Mosse[i].PosFin);
+		}
+		else if (GameMode->GField->Mosse[i].PosInit.Y == 14)
+		{ 
+			GameMode->GField->DistruggiPezzo(GameMode->GField->Mosse[i].PosFin);
+		}
+		else
+		{
 			//devo fare il domove al contrario di tutte le mosse intermedie
 			GameMode->GField->ResetMossa(GameMode->GField->Mosse[i].PosFin, GameMode->GField->Mosse[i].PosInit, GameMode->GField->Mosse[i].Player);
+		}
+			
 			GameMode->MoveCounter--;
 
 			// rimuovo l'oggetto appena creato all'array Mosse

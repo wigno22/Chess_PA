@@ -328,13 +328,6 @@ void AHumanPlayer::OnClickPers(ATile* CurrTile)
 		}
 
 
-		/*
-		if (AHumanPlayer::ControlloMossaScacco( TileArrivo, Avversario))
-		{
-			GameInstance->SetTurnMessage(TEXT("Mossa non valida!"));
-			return;
-		}
-	*/
 
 
 		//ho una tile che non appartiene a me ed è valida, devo fare la mossa
@@ -401,7 +394,6 @@ void AHumanPlayer::OnClickPers(ATile* CurrTile)
 			GameInstance->SetTurnMessage(TEXT("  ---  "));
 			//voglio resettare le mosse valide
 			GameMode->GField->ResetLegalMoves();
-
 			GameMode->bIsMyTurn = false;
 			GameMode->TurnNextPlayer(1);
 		

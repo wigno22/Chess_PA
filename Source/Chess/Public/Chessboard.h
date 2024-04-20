@@ -28,9 +28,13 @@ public:
 
 	int32 GloXC = 7;
 	int32 GloYC = 9;
+	int32 GloXCQ = 7;
+	int32 GloYCQ = 13;
 
 	int32 GloXG = 7;
 	int32 GloYG = 11;
+	int32 GloXGQ = 7;
+	int32 GloYGQ = 14;
 
 //classe per tenere traccia delle mosse
  class Spostato
@@ -148,6 +152,8 @@ public:
 
 	//metodo per fare la mossa
 	void DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer);
+
+	void DistruggiPezzo(FVector2D Position);
 
 	void ResetMossa(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer);
 

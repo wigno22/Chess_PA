@@ -222,21 +222,21 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			//prendo il pezzo e lo metto fuori scacchiera
 			PieceFin->SetGridPosition(GloXC, GloYC);
 			
-			if (GloXC <  0 )
+			if (GloXC < 0 )
 			{
 				GloYC = 9;
 				GloXC = 7;
 			}
 			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXC, GloYC);
-			GloXC = GloXC - 1;
+			
 			Position.Z = 5;
 			PieceFin->SetActorLocation(Position);
 			//trasformo Position in fvector2d
-			FVector2D Posizione = FVector2D(GloXG, GloYG);
+			FVector2D Posizione = FVector2D(GloXC, GloYC);
 			(*TileMap.Find(Posizione))->SetPiece(PieceFin);
 			(*TileMap.Find(Posizione))->SetTileStatus(0, ETileStatus::OCCUPIED);
-
 			RegistraMosse(PosFin, Posizione, PieceFin, 1);
+			GloXC = GloXC - 1;
 
 
 			if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
@@ -244,7 +244,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 				if (PieceFin->GetWeight() == 100)
 				{
 					
-					GameMode->IsGameOver = true;
+					//GameMode->IsGameOver = true;
 					GameMode->Winner = CurrentPlayer;
 					GameMode->OnWin();
 				}
@@ -275,7 +275,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXG, GloYG);
 			Position.Z = 5;
 
-			GloXG = GloXG - 1;
+			
 			PieceFin->SetActorLocation(Position);
 
 			FVector2D Posizione = FVector2D(GloXG, GloYG);
@@ -283,14 +283,14 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			(*TileMap.Find(Posizione))->SetTileStatus(1, ETileStatus::OCCUPIED);
 
 			RegistraMosse(PosFin, Posizione, PieceFin, 0);
-
+			GloXG = GloXG - 1;
 
 			if ((*TileMap.Find(PosFin))->GetTileOwner() != -1)
 			{
 				if (PieceFin->GetWeight() == 100)
 				{
 					
-					GameMode->IsGameOver = true;
+					//GameMode->IsGameOver = true;
 					GameMode->Winner = CurrentPlayer;
 					GameMode->OnWin();
 				}
@@ -324,6 +324,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 	{
 		if ((*TileMap.Find(PosInit))->GetTileOwner() == 1 && PosFin.X == 0)
 		{
+			
 			Piece = PromozionePedReg(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
 			//RandomPlayer->RilevaPezzi(1);
 		}
@@ -352,6 +353,11 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 }
 
 
+void AChessboard::DistruggiPezzo(FVector2D Position)
+{
+	(*TileMap.Find(Position))->GetPiece()->Destroy();
+}
+
 
 //funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
 void AChessboard::ResetMossa(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer)
@@ -372,8 +378,25 @@ void AChessboard::ResetMossa(FVector2D PosInit, FVector2D PosFin, int32 CurrentP
 	FVector Position = AChessboard::GetRelativeLocationByXYPosition(PosFin.X, PosFin.Y);
 	Position.Z = 5;
 	Piece->SetActorLocation(Position);
+	FVector2D PosizioneTi;
 
-	
+	if (CurrentPlayer == 0 && GloXC < 7 && PosInit.Y > 8)
+	{
+		GloXC = PosInit.X;
+	}
+	else if (CurrentPlayer == 1 && GloXG < 7 && PosInit.Y > 8)
+	{
+		GloXG = PosInit.X;
+	}
+	if (CurrentPlayer == 0 && GloXCQ < 7 && PosInit.Y > 8)
+	{
+		GloXCQ = PosInit.X;
+	}
+	else if (CurrentPlayer == 1 && GloXGQ < 7 && PosInit.Y > 8)
+	{
+		GloXGQ = PosInit.X;
+	}
+
 
 
 	// sistemo attributi della tile iniziale e finale 
@@ -408,13 +431,27 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 
 	int32 x = PosFin.X;
 	int32 y = PosFin.Y;
+	FVector2D PosFinTemp = FVector2D(x, y);
 	int32 OwnerPezzo = Piece->GetTile()->GetTileOwner();
 
+	//DoMove(PosInit, PosFin, OwnerPezzo);
 
-	PosFin.X = -9;
-	PosFin.Y = -9;
+	if (OwnerPezzo == 1)
+	{
+		PosFin.X = GloXCQ;
+		PosFin.Y = GloYCQ;
+	}
+	else
+	{
+		PosFin.X = GloXGQ;
+		PosFin.Y = GloYGQ;
+	}	
+
+	DoMove(PosInit, PosFin, OwnerPezzo);
+	GameMode->GField->Mosse[Mosse.Num() - 1].PosInit= GameMode->GField->Mosse[Mosse.Num() - 2].PosFin;
+	//GameMode->GField->Mosse[Mosse.Num()-2].PosInit = PosInit;
 	// aggiungo nella lista delle mosse la posizione -9,-9
-	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece(), OwnerPezzo);
+	//RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece(), OwnerPezzo);
 
 	
 
@@ -436,25 +473,11 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 	
 	(*TileMap.Find(PosInit))->Piece = nullptr;
 
-	//per promuovere pedone in regina ho bisogno che la tile in cui creo la regina sia vuota
-	//cancello il pedone
-	Piece->Destroy();
-
-
-	(*TileMap.Find(PosFin))->SetTileStatus(-1, ETileStatus::EMPTY);
-	(*TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
-
 	
-
-
-
-
-
 	if (OwnerPezzo == 1)
 	{
-		
+	
 		BW = 1;
-		 
 		PieceObj = CreaRegina(1, Position);
 		newName = "REGINA_B" + std::to_string(static_cast<int>(FMath::RandRange(0, 10000)));
 		
@@ -464,14 +487,11 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 		PieceObj = CreaRegina(0, Position);
 		newName = "REGINA_W" + std::to_string(static_cast<int>(FMath::RandRange(0, 10000)));
 		
-
 	}
 
 	
 	FString fString;
 	PieceObj->SetName(fString.Printf(TEXT("%s"), *FString(newName.c_str())));
-
-
 	
 	PieceObj->SetTipoPedina("REGINA");
 	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));
@@ -490,8 +510,19 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 	PieceObj->SetCurrentTile((*TileMap.Find(PosFin)));
 
 	// aggiungo nella lista delle mosse la creazione della regina con posizione -9,-9 -> pos vera
-	PosInit.X = -9;
-	PosInit.Y = -9;
+	if (OwnerPezzo == 1)
+	{
+		PosInit.X = GloXCQ;
+		GloXCQ--;
+	}
+	else
+	{
+		PosInit.X = GloXGQ;
+		GloXGQ--;
+	}
+
+	
+	PosInit.Y = GloYCQ;
 	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosFin))->GetPiece(), OwnerPezzo);
 	//RigeneraTileArray();
 
@@ -524,7 +555,7 @@ void AChessboard::RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Pie
 void AChessboard::ClearScrollBox()
 {
 	 GloXC = 7;
-	 GloYC = 8;
+	 GloYC = 9;
 
 	 GloXG = 7;
 	 GloYG = 11;
@@ -540,6 +571,7 @@ void AChessboard::ClearScrollBox()
 		}
 	}
 	GameMode->HUD->ScrollBox->ClearChildren();
+
 	 
 }
 
@@ -599,30 +631,50 @@ void AChessboard::ResetField()
 	for (ATile* Obj : TileArray)
 	{
 		//voglio distruggere tutti gli oggetti
-		if (Obj->GetPiece()!= nullptr)
+		if (Obj->GetPiece() != nullptr)
 		{
 			Obj->GetPiece()->Destroy();
 		}
 		Obj->Destroy();
-		
+
 	}
+
+	for (int32 j = 7; j >= 0; j--)
+	{
+		for (int32 k = 9; k < 11; k++)
+		{
+			if ((*TileMap.Find(FVector2D(j, k)))->GetPiece() != nullptr)
+			{
+				(*TileMap.Find(FVector2D(j, k)))->Piece->Destroy();
+			}
+			
+		}
+	}
+
+	for (int32 a = 7; a >= 0; a--)
+	{
+		for (int32 b = 11; b < 13; b++)
+		{
+			if ((*TileMap.Find(FVector2D(a, b)))->GetPiece() != nullptr)
+			{
+				(*TileMap.Find(FVector2D(a, b)))->Piece->Destroy();
+			}
+		}
+	}
+
+
 	ResetLegalMoves();
 	TileArray.Empty();
 	TileMap.Empty();
 	Mosse.Empty();
 	Mangiate.clear();
+	 GloXC = 7;
+	 GloYC = 9;
 
-	/*for (APiece* Pezzo : PezziBianchiMangiati)
-	{
-		Pezzo->Destroy();
-	}
-	for (APiece* Pezzo : PezziNeriMangiati)
-	{
-		Pezzo->Destroy();
-	}
-	PezziBianchiMangiati.Empty();
-	PezziNeriMangiati.Empty();
-	*/
+	 GloXG = 7;
+	 GloYG = 11;
+
+	
 
 	OnReset.Broadcast();
 
@@ -667,6 +719,7 @@ void AChessboard::GenerateField()
 			const float TileScale = TileSize / 100;
 			Obj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
 			Obj->SetGridPosition(x, y);
+			
 			TileArray.Add(Obj);
 			TileMap.Add(FVector2D(x, y), Obj);
 
@@ -681,7 +734,7 @@ void AChessboard::GenerateField()
 
 	for (int32 j = 7; j>=0 ; j--)
 	{
-		for (int32 k = 9; k < 11 ;k++)
+		for (int32 k = 9; k < 15 ;k++)
 		{
 			FVector Location = AChessboard::GetRelativeLocationByXYPosition(j, k);
 			Location.Z = 0;
@@ -693,28 +746,12 @@ void AChessboard::GenerateField()
 			Obj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
 			Obj->SetGridPosition(j, k);
 			
+			
 			TileMap.Add(FVector2D(j, k), Obj);
 		}
 	}
 
-	for (int32 a = 7; a >=0 ; a--)
-	{
-		for (int32 b = 11 ; b < 13; b++)
-		{
-			FVector Location = AChessboard::GetRelativeLocationByXYPosition(a, b);
-			Location.Z = 0;
-			ATile* Obj = GetWorld()->SpawnActor<ATile>(TileClass, Location, FRotator::ZeroRotator);
-
-			Obj->Piece = nullptr;
-
-			const float TileScale = TileSize / 100;
-			Obj->SetActorScale3D(FVector(TileScale, TileScale, 0.2));
-			Obj->SetGridPosition(a, b);
-			
-			TileMap.Add(FVector2D(a, b), Obj);
-		}
-	}
-
+	
 
 
 }
@@ -736,7 +773,6 @@ FVector2D AChessboard::TrovaRe(int32 Prop)
 
 }
 
-
 void AChessboard::RigeneraTileArray()
 {
 	TileArray.Empty();
@@ -746,9 +782,7 @@ void AChessboard::RigeneraTileArray()
 		ATile* Obj = CurrTile.Value;
 
 		TileArray.Add(Obj);
-
 	}
-
 }
 
 FVector2D AChessboard::GetTilePosition(const FHitResult& Hit)
@@ -796,7 +830,6 @@ ATile* AChessboard::GetTileAtPosition(const FVector2D & Position) const {
 	
 	return nullptr; // Se non è stata trovata una tile corrispondente, restituisci nullptr
 }
-
 
 void AChessboard::GeneratePiece(int32 x, int32 y)
 {

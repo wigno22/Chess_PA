@@ -61,7 +61,7 @@ void AChessGameMode::BeginPlay()
 
 	float CameraPosX = ((GField->TileSize * (FieldSize + ((FieldSize - 1) * GField->NormalizedCellPadding) - (FieldSize - 1))) / 2) - (GField->TileSize / 2);
 	
-	FVector CameraPos(CameraPosX, CameraPosX, 1100.0f);
+	FVector CameraPos(CameraPosX, CameraPosX, 1500.0f);
 	HumanPlayer->SetActorLocationAndRotation(CameraPos, FRotationMatrix::MakeFromX(FVector(0, 0, -1)).Rotator());
 
 	// Human player = 0
@@ -86,8 +86,7 @@ void AChessGameMode::ChoosePlayerAndStartGame()
 		Players[i]->PlayerNumber = i;
 		
 	}
-	
-	//Players[CurrentPlayer]->OnTurn();
+		
 }
  
 
@@ -134,7 +133,7 @@ void AChessGameMode::OnWin()
 	UChessGameInstance* GameInstance = Cast<UChessGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	AChessboard* Chessboard = Cast<AChessboard>(GField);
 
-	IsGameOver = true;
+	//IsGameOver = true;
 
 	if (Winner == 1)
 	{

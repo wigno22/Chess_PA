@@ -27,6 +27,7 @@ public:
 
 	bool bIsValid;
 
+	bool bIsOut = false;
 
 	// The tile's status
 	void SetTileStatus(const int32 TileOwner, const ETileStatus TileStatus);
