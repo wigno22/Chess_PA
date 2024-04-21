@@ -20,7 +20,7 @@ void UChessWidget::RemoveMossa(int32 ID)
 
 
 
-void UChessWidget::AddMossa(FString NamePiece, FVector2D PosFin, int32 ID, int32 OwnerPed)
+void UChessWidget::AddMossa(FString NamePiece, FVector2D PosFin, int32 ID, int32 OwnerPed, bool Blocca)
 {
 	UUserWidget* Widget = CreateWidget(this, MyWidgetEntry);
 	
@@ -28,7 +28,7 @@ void UChessWidget::AddMossa(FString NamePiece, FVector2D PosFin, int32 ID, int32
 
 	UMyWidget* Entry = Cast<UMyWidget>(Widget);
 	
-	Entry->SetData(NamePiece, PosFin, ID, OwnerPed);
+	Entry->SetData(NamePiece, PosFin, ID, OwnerPed,  Blocca);
 
 }
  

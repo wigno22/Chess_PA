@@ -34,7 +34,7 @@ public:
 
 	// Funzione che aggiunge una mossa al scrollbox
 	 UFUNCTION(BlueprintCallable)
-	 void AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 Owner);
+	 void AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 Owner, bool Blocca);
 
 	 // Funzione che rimuovere una mossa al scrollbox
 	 UFUNCTION(BlueprintCallable)

@@ -71,7 +71,7 @@ void UMyWidget::HandleButtonClick()
 	
 }
 
-void UMyWidget::SetData(FString nome, FVector2D PosFin, int32 num, int32 OwnerPed)
+void UMyWidget::SetData(FString nome, FVector2D PosFin, int32 num, int32 OwnerPed,bool Blocca)
 {
 
 	// Converte il testo da FString a std::string
@@ -91,7 +91,7 @@ void UMyWidget::SetData(FString nome, FVector2D PosFin, int32 num, int32 OwnerPe
 	Text->SetOpacity(1);
 	Text->SetColorAndOpacity(FLinearColor::White);
 	
-	if (OwnerPed == 0 && PosFin.Y <= 7 || OwnerPed == 1 && PosFin.Y  > 7)
+	if ((OwnerPed == 0 && PosFin.Y <= 7 || OwnerPed == 1 && PosFin.Y  > 7) && !Blocca)
 	{
 	 
 		Text->SetColorAndOpacity(FLinearColor::Black);

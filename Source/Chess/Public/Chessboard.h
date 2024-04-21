@@ -66,13 +66,6 @@ public:
 
 	std::vector<Mangiata> Mangiate;
 
-	TArray<Mangiata> MangiateNew;
-
-	//voglio un array che tenga conto delle pedine bianche
-	//TArray<APiece*> PezziBianchiMangiati;
-	//voglio un array che tenga conto delle pedine nere
-	//TArray<APiece*> PezziNeriMangiati;
-	
 
 	// Sets default values for this actor's properties
 	AChessboard();
@@ -134,10 +127,6 @@ public:
 	//Attributo per la posizione della pedina selezionata
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FVector2D TileAttiva;
-
-
-	UFUNCTION(BlueprintCallable)
-	bool  ColorLegalMovesRE(TArray<FVector2D> MosseLegali, ATile* TileDef);
 
 	//Metodo per le mosse legali a cui passo la posizione della pedina selezionata
 	UFUNCTION(BlueprintCallable)
@@ -212,6 +201,5 @@ public:
 	APiece* CreaAlfiere(int32 Colore, FVector Position, int32 y);
 	APiece* CreaTorre(int32 Colore, FVector Position, int32 y);
 	APiece* CreaCavallo(int32 Colore, FVector Position, int32 y);
-	
 
 };

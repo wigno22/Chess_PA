@@ -36,7 +36,7 @@ public:
 
 	//funzione per aggiungere una mossa al widget
 	UFUNCTION(BlueprintCallable)
-	void AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 OwnerPed);
+	void AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 OwnerPed, bool Blocca);
 
 	 
 
@@ -82,5 +82,5 @@ public:
 	int32 GetNextPlayer(int32 Player);
 
 	// called at the end of the game turn
-	void TurnNextPlayer(int32 Player);
+	void TurnNextPlayer(int32 Player, FVector2D Mossa);
 };

@@ -30,6 +30,6 @@ class CHESS_API UMyWidget : public UUserWidget
 
 	 UFUNCTION(BlueprintCallable)
 	 void HandleButtonClick();
-	 void SetData(FString Mossa, FVector2D PosFin, int32 ID, int32 OwnerPed);
+	 void SetData(FString Mossa, FVector2D PosFin, int32 ID, int32 OwnerPed, bool Blocca);
 
 };

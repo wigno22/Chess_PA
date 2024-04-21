@@ -46,16 +46,17 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	//virtual void OnTurn() override;
-	virtual void OnWin() override;
+	//virtual void OnWin() override;
 	//virtual void OnLose() override;
 
-	void GiocatoreAI(int32 Player);
+	void GiocatoreAI(int32 Player,FVector2D Mossa);
 	TArray<APiece*> RilevaPezzi(int32 Player);
-	void SimulaMosse();
+
+	void SimulaMosse(FVector2D Mossa);
 	bool SimulaControMossa(FVector2D TilePosition);
+	TArray<FVector2D> SimulaMosseControlloScacco(FVector2D TilePosition,  int32 GiocatoreAVV);
+	TArray<FVector2D> ControlloScacco(int32 PieceOwner);
 
-
-
-	std::vector <AChessboard::Mangiata> GiocatoreAIScacco(int32 Player);
-	std::vector <AChessboard::Mangiata> SimulaMosseScacco(int32 Player);
+	int SimulaMosseControlloScaccoNum(FVector2D TilePosition, int32 GiocatoreAVV);
+	int ControlloScaccoNum(int32 PieceOwner);
 };

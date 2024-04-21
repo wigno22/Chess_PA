@@ -38,8 +38,6 @@ void AChessGameMode::BeginPlay()
 	}
 
 
-
-
 	IsGameOver = false;
 
 	MoveCounter = 0;
@@ -100,7 +98,7 @@ int32 AChessGameMode::GetNextPlayer(int32 Player)
 	return Player;
 }
 
-void AChessGameMode::TurnNextPlayer(int32 Player)
+void AChessGameMode::TurnNextPlayer(int32 Player, FVector2D Mossa)
 {
 	//prendo attributi gamemode qui per usarli nei due if
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
@@ -120,7 +118,7 @@ void AChessGameMode::TurnNextPlayer(int32 Player)
 		ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(Players[Player]);
 
 		
-		RandomPlayer->GiocatoreAI(Player);
+		RandomPlayer->GiocatoreAI(Player,  Mossa);
 	}
 	
 	 
@@ -145,12 +143,12 @@ void AChessGameMode::OnWin()
 		GameInstance->SetTurnMessage(TEXT("Human Wins!"));
 		GameInstance->IncrementScoreHumanPlayer();
 	}
-
+	IsGameOver = true;
 
 }
 
-void AChessGameMode::AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 OwnerPed)
+void AChessGameMode::AddMossa(FString NamePiece, FVector2D PosFinale, int32 ID, int32 OwnerPed, bool Blocca)
 {
-	HUD->AddMossa(NamePiece, PosFinale, ID, OwnerPed);
+	HUD->AddMossa(NamePiece, PosFinale, ID, OwnerPed, Blocca);
 }
  
