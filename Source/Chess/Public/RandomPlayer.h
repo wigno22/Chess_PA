@@ -47,6 +47,8 @@ public:
 	TMap <APiece*, TArray<FVector2D>> MappaPezzi;
 	TArray<FVector2D> MosselegaliPedina;
 
+	bool V_scacco = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -70,20 +72,6 @@ public:
 	bool ControlloMossaScacco(FVector2D TileArrivo, int32 Giocatore, APiece* Pezzo);
 
 
-
-
-	void SimulazioneSpostamento(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer, bool mangiata);
-	void SimulazioneSpostamentoContrario(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer, bool mangiata);
-
-
-
-
-
-
 	bool SimulaControMossa(FVector2D TilePosition);
-	TArray<FVector2D> SimulaMosseControlloScacco(FVector2D TilePosition,  int32 GiocatoreAVV);
-	TArray<FVector2D> ControlloScacco(int32 PieceOwner);
-
-	int SimulaMosseControlloScaccoNum(FVector2D TilePosition, int32 GiocatoreAVV);
-	int ControlloScaccoNum(int32 PieceOwner);
+	
 };

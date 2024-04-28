@@ -756,7 +756,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 
 	}
-	else if (x == 7 && y == 3)
+	/*else if (x == 7 && y == 3)
 	{
 		PieceObj = CreaRegina(1, Position);
 		BW = 1;
@@ -783,32 +783,32 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 	{
 		PieceObj = CreaPedone(1, Position);
 		BW = 1;
-	}
+	}*/
 
 	else if (x == 0 && (y == 0 || y == 7))
 	{
 		PieceObj = CreaTorre(0, Position, y);
 	}
 	
-	else if (x == 7 && (y == 0 || y == 7))
+	/*else if (x == 7 && (y == 0 || y == 7))
 	{
 		PieceObj = CreaTorre(1, Position, y);
 		BW = 1;
 	}
-	
+	*/
 
 	else if (x == 0 && (y == 2 || y == 5))
 	{
 
 		PieceObj = CreaAlfiere(0, Position, y);
 	}
-	
+	/*
 	else if (x == 7 && (y == 2 || y == 5))
 	{
 		PieceObj = CreaAlfiere(1, Position, y);
 		BW = 1;
 	}
-	
+	*/
 
 	if (PieceObj != nullptr)
 	{

@@ -90,11 +90,16 @@ TMap <APiece*, TArray<FVector2D>> ARandomPlayer::MossePossibiliGioc(int32 Player
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
 
+	TArray<FVector2D> MosseTotaliBlack;
+	
 	//svuoto la mappa
 	for (auto& Elem : MappaPezzi)
 	{
 		Elem.Value.Empty();
 	}
+	//svuoto l'array
+	MosseTotaliBlack.Empty();
+
 
 	PezziAI = RilevaPezzi(Player);
 	//scorro tutti i pezzi del computer e trovo le mosse legali
@@ -105,7 +110,7 @@ TMap <APiece*, TArray<FVector2D>> ARandomPlayer::MossePossibiliGioc(int32 Player
 
 		APiece* Piece = *it;
 
-		for (int i = 0; i < MosselegaliPedina.Num() - 1; i++)
+		for (int i = 0; i < MosselegaliPedina.Num(); i++)
 		{
 			MosselegaliPedina.RemoveAt(i);
 		}
@@ -123,15 +128,19 @@ TMap <APiece*, TArray<FVector2D>> ARandomPlayer::MossePossibiliGioc(int32 Player
 				MosselegaliPedina.RemoveAt(i);
 				i--;
 			}
-			
+
 		}
+		MosseTotaliBlack.Append(MosselegaliPedina);
 		MappaPezzi.Add(Piece, MosselegaliPedina);
 		++it;
 	}
 	//SISTEMARE SCACCO MATTO NERO
 	 // se in mappapezzi non ho mosse legali, il giocatore è in scacco matto
-	for (auto& Pair : MappaPezzi)
+	if (MosseTotaliBlack.Num() == 0)
 	{
+		GameInstance->SetTurnMessage(TEXT("Scacco Matto!"));
+		GameMode->CurrentPlayer = 0;
+		GameMode->OnWin();
 
 	}
 	
@@ -179,7 +188,7 @@ void ARandomPlayer::SimulaMosse(int32 Player)
 	int UserOwner ;
 
 
-	if (TrovataMossa)
+	if (TrovataMossa && V_scacco == false)
 	{
 		int32 Posizione = 0;
 		Posizione = GameMode->GField->Mangiate.size();
@@ -242,28 +251,9 @@ void ARandomPlayer::SimulaMosse(int32 Player)
 
 
 
-	if (!TrovataMossa)
+	if (!TrovataMossa || TrovataMossa && V_scacco == true)
 	{
-		/*
-	//in mappapezzi ho tutti i pezzi e le loro mosse legali che non mi espongono a scacco
-	//scelgo una mossa a caso tra quelle possibili
-		int32 Indice = FMath::RandRange(0, PezziAI.Num() - 1);
-		int32 IndiceMossa = FMath::RandRange(0, MappaPezzi[PezziAI[Indice]].Num() - 1);
-		if (MappaPezzi[PezziAI[Indice]].Num() == 0)
-		{
-			while (MappaPezzi[PezziAI[Indice]].Num() == 0)
-			{
-				Indice = FMath::RandRange(0, PezziAI.Num() - 1);
-				IndiceMossa = FMath::RandRange(0, MappaPezzi[PezziAI[Indice]].Num() - 1);
-			}
-		}
-		GameMode->GField->DoMove(PezziAI[Indice]->GetGridPosition(), MappaPezzi[PezziAI[Indice]][IndiceMossa], 1);
-		
-		//GameMode->CurrentPlayer = 0;
-*/
-
-
-		
+	
 		AChessboard::Spostato Mossa{};
 		PezziAI = RilevaPezzi(GameMode->CurrentPlayer);
 
@@ -311,35 +301,12 @@ void ARandomPlayer::SimulaMosse(int32 Player)
 			UserOwner = GameMode->CurrentPlayer;
 			GameMode->GField->DoMove(MossaINI, MossaEND, UserOwner);
 
-			
-			//GameMode->GField->ResetLegalMoves();
-			//GameMode->CurrentPlayer = 0;
 		}
 		
 	}
 
 	
 
-
-
-
-
-
-
-
-	/*
-
-	//in mappapezzi ho tutti i pezzi e le loro mosse legali che non mi espongono a scacco
-	//scelgo una mossa a caso tra quelle possibili
-	int32 Indice = FMath::RandRange(0, PezziAI.Num() - 1);
-	int32 IndiceMossa = FMath::RandRange(0, MappaPezzi[PezziAI[Indice]].Num() - 1);
-	while (MappaPezzi[PezziAI[Indice]].Num() == 0)
-	{
-	Indice = FMath::RandRange(0, PezziAI.Num() - 1);
-	IndiceMossa = FMath::RandRange(0, MappaPezzi[PezziAI[Indice]].Num() - 1);
-	}
-	GameMode->GField->DoMove(PezziAI[Indice]->GetGridPosition(), MappaPezzi[PezziAI[Indice]][IndiceMossa], 1 );
-		*/
 	GameMode->GField->ResetLegalMoves();
 	GameMode->CurrentPlayer = 0;
 	
@@ -355,7 +322,7 @@ bool ARandomPlayer::ControlloMossaScacco(FVector2D TileArrivo, int32 Giocatore, 
 
 	FVector2D RePosition = FVector2D(-1, -1);
 	
-	bool V_scacco = false;
+	 V_scacco = false;
 	int32 Avversario = 0;
 
 	APiece* PedPartenza = GameMode->GField->GetTileAtPosition(TilePartenza)->GetPiece();
@@ -413,165 +380,6 @@ bool ARandomPlayer::ControlloMossaScacco(FVector2D TileArrivo, int32 Giocatore, 
 }
 
 
-/*
-//funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
-void ARandomPlayer::SimulazioneSpostamento(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer, bool mangiata)
-{
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
-
-	APiece* PieceFin = (*GameMode->GField->TileMap.Find(PosFin))->GetPiece();
-
-
-		//sono il compure e sposto fuorei se la posFinale è di 0
-		if ((*GameMode->GField->TileMap.Find(PosFin))->GetTileOwner() == 0 && (*GameMode->GField->TileMap.Find(PosInit))->GetTileOwner() == 1)
-		{
-			//prendo il pezzo e lo metto fuori scacchiera
-			PieceFin->SetGridPosition(GameMode->GField->GloXG, GameMode->GField->GloYG);
-
-
-			if (GameMode->GField->GloXG < 0)
-			{
-				GameMode->GField->GloYG = 12;
-				GameMode->GField->GloXG = 7;
-			}
-
-
-			FVector2D Posizione = FVector2D(GameMode->GField->GloXG, GameMode->GField->GloYG);
-			(*GameMode->GField->TileMap.Find(Posizione))->SetPiece(PieceFin);
-			(*GameMode->GField->TileMap.Find(Posizione))->SetTileStatus(0, ETileStatus::OCCUPIED);//TODO: cambiare con il player corretto
-
-			//GameMode->GField->GloXG = GameMode->GField->GloXG - 1;
-
-
-			(*GameMode->GField->TileMap.Find(PosFin))->Piece = nullptr;
-			(*GameMode->GField->TileMap.Find(PosFin))->SetTileStatus(-1, ETileStatus::EMPTY);
-
-		}
-
-
-		APiece* Piece = (*GameMode->GField->TileMap.Find(PosInit))->GetPiece();
-		Piece->SetGridPosition(PosFin.X, PosFin.Y);
-
-
-		// sistemo attributi della tile iniziale e finale 
-		(*GameMode->GField->TileMap.Find(PosFin))->Piece = Piece;
-		(*GameMode->GField->TileMap.Find(PosInit))->Piece = nullptr;
-
-		(*GameMode->GField->TileMap.Find(PosFin))->SetTileStatus(CurrentPlayer, ETileStatus::OCCUPIED);
-		(*GameMode->GField->TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
-
-
-
-		Piece->SetCurrentTile((*GameMode->GField->TileMap.Find(PosFin)));
-
-		GameMode->GField->ResetLegalMoves();
-	
-}
-
-
-void ARandomPlayer::SimulazioneSpostamentoContrario(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer, bool mangiata)
-{
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
-
-
-
-	//prendo il pezzo nella pos iniziale e lo metto nella pos finale
-
-	APiece* PieceIn = (*GameMode->GField->TileMap.Find(PosInit))->GetPiece();
-
-	// sistemo attributi della tile iniziale e finale 
-	(*GameMode->GField->TileMap.Find(PosFin))->Piece = PieceIn;
-	(*GameMode->GField->TileMap.Find(PosInit))->Piece = nullptr;
-
-	(*GameMode->GField->TileMap.Find(PosFin))->SetTileStatus(1, ETileStatus::OCCUPIED);
-	(*GameMode->GField->TileMap.Find(PosInit))->SetTileStatus(-1, ETileStatus::EMPTY);
-
-	PieceIn->SetCurrentTile((*GameMode->GField->TileMap.Find(PosFin)));
-
-	ATile* TileOut  = *GameMode->GField->TileMap.Find(FVector2D(7,11));
-
-	//prendo pezzo fuori dal campo e dovrò metterlo nella pos iniziale
-	APiece* PieceOut = TileOut->GetPiece();
-
-	(*GameMode->GField->TileMap.Find(PosInit))->Piece = PieceOut;
-	TileOut->Piece = nullptr;
-
-	(*GameMode->GField->TileMap.Find(PosInit))->SetTileStatus(0, ETileStatus::OCCUPIED);
-	TileOut->SetTileStatus(-1, ETileStatus::EMPTY);
-
-	PieceOut->SetCurrentTile((*GameMode->GField->TileMap.Find(PosInit)));
-	PieceOut->SetGridPosition(PosInit.X, PosInit.Y);
-	
-	GameMode->GField->ResetLegalMoves();
-
-}
-
-*/
-
-
-
-TArray<FVector2D>  ARandomPlayer::SimulaMosseControlloScacco(FVector2D TilePosition, int32 GiocatoreAVV)
-{
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	 
-
-	FVector2D Mossa = FVector2D(-1, -1);
-	int32 Indice = 0;
-	TArray<FVector2D> MosselegaliAvv; 
-	  
-	while (GameMode->GField->Mangiate.size() > 0)
-	{
-		GameMode->GField->Mangiate.erase(GameMode->GField->Mangiate.begin() + 0); // Rimuovi il primo elemento dall'array
-	}
-
-	APiece* Piece = nullptr;
-	//Trovo il pezzo che voglio controllare se ha mosse legali
-	Piece = GameMode->GField->GetTileAtPosition(TilePosition)->GetPiece();
-	//Trovo tutte le mosse legali del pezzo
-	TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
-
-	if(Mosselegali.IsEmpty())
-	{
-		return Mosselegali;
-	} 
-	 
-	// Trovo i pezzi avverssario 
-	RilevaPezzi(GiocatoreAVV);
-
-
-	for (APiece* PieceNew : PezziAI)
-	{
-		for (FVector2D MossalegAvv : PieceNew->CalculateMoves(PieceNew->GetTile()))
-		{
-			MosselegaliAvv.Add(MossalegAvv);
-		}
-	}		
-		
-		
-	//se il pezzo è sotto scacco, non ha mosse legali e non può muoversi
-
-			
-	for (int j = 0; j < Mosselegali.Num(); j++)
-	{
-		for (int i = 0; i < MosselegaliAvv.Num(); i++)
-		{
-			if (Mosselegali[j] == MosselegaliAvv[i])
-			{
-				Mosselegali.RemoveAt(j);
-				
-				j--;
-			}
-		}
-		 
-	}
-	// se il contatore è maggiore di 0, significa che il pezzo ha mosse legali e non è sotto scacco
-	//
-	return Mosselegali;
-
-	
-}
 
 //controllo se la mossa che voglio fare mi espone a un attacco dell'avversario
 bool ARandomPlayer::SimulaControMossa(FVector2D TilePosition)
@@ -616,155 +424,4 @@ bool ARandomPlayer::SimulaControMossa(FVector2D TilePosition)
 	}
 	RilevaPezzi(GameMode->CurrentPlayer);
 	return Acc;
-}
-
-TArray<FVector2D> ARandomPlayer::ControlloScacco(int32 PieceOwner)
-{
-	//cast di gamemode
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
-	TArray<FVector2D> Mosselegali = {};
-
-
-	for (int i = 0; i < Mosselegali.Num(); i++)
-	{
-		Mosselegali.RemoveAt(i);
-	}
-
-	int Avversario;
-
-	if (PieceOwner == 1) //se gioca il computer 
-	{
-		Avversario = 0; //l'avversario è il computer
-	}
-	else
-	{
-		Avversario = 1; //l'avversario è il giocatore umano
-	}
-
-
-	FVector2D RePosition = GameMode->GField->TrovaRe(PieceOwner); //Se bianchi avversario è il nero e viceversa
-	//solo per il controllo cambio il giocatore con l'avversario e poi faccio l'inverso
-
-	if (RePosition.X >= 0)
-	{
-		  Mosselegali =  SimulaMosseControlloScacco(RePosition, Avversario);
-		 
-		return Mosselegali;
-	}
-	return Mosselegali;
-	}
-
-int ARandomPlayer::ControlloScaccoNum(int32 PieceOwner)
-{
-	//cast di gamemode
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	ARandomPlayer* RandomPlayer = Cast<ARandomPlayer>(GetWorld()->GetAuthGameMode());
-	TArray<FVector2D> Mosselegali = {};
-	for (int i = 0; i < Mosselegali.Num(); i++)
-	{
-		Mosselegali.RemoveAt(i);
-	}
-	int Avversario;
-
-	if (PieceOwner == 1) //se gioca il computer 
-	{
-		Avversario = 0; //l'avversario è il computer
-	}
-	else
-	{
-		Avversario = 1; //l'avversario è il giocatore umano
-	}
-
-
-	FVector2D RePosition = GameMode->GField->TrovaRe(PieceOwner); //Se bianchi avversario è il nero e viceversa
-	//solo per il controllo cambio il giocatore con l'avversario e poi faccio l'inverso
-
-	 
-	return SimulaMosseControlloScaccoNum(RePosition, Avversario);
-}
-
-int ARandomPlayer::SimulaMosseControlloScaccoNum(FVector2D TilePosition, int32 GiocatoreAVV)
-{
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-
-
-	FVector2D Mossa = FVector2D(-1, -1);
-	int32 Indice = 0;
-	TArray<FVector2D> MosselegaliAvv;
-	int32 contatoreEND = 0;
-	int32 contatoreINI = 0;
-	bool scacco = false;
-
-	while (GameMode->GField->Mangiate.size() > 0)
-	{
-		GameMode->GField->Mangiate.erase(GameMode->GField->Mangiate.begin() + 0); // Rimuovi il primo elemento dall'array
-	}
-
-	APiece* Piece = nullptr;
-	//Trovo il pezzo che voglio controllare se ha mosse legali
-	Piece = GameMode->GField->GetTileAtPosition(TilePosition)->GetPiece();
-	//Trovo tutte le mosse legali del pezzo
-	TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
-
-	if (Mosselegali.IsEmpty())
-	{
-		return -9;
-	}
-	contatoreINI = Mosselegali.Num();
-	contatoreEND = Mosselegali.Num();
-
-	// Trovo i pezzi avverssario 
-	RilevaPezzi(GiocatoreAVV);
-
-
-	for (APiece* PieceNew : PezziAI)
-	{
-		for (FVector2D MossalegAvv : PieceNew->CalculateMoves(PieceNew->GetTile()))
-		{
-			MosselegaliAvv.Add(MossalegAvv);
-		}
-	}
-
-
-	//se il pezzo è sotto scacco, non ha mosse legali e non può muoversi
-
-
-	for (int j = 0; j < Mosselegali.Num(); j++)
-	{
-		for (int i = 0; i < MosselegaliAvv.Num(); i++)
-		{
-			if (Mosselegali[j] == MosselegaliAvv[i])
-			{
-				Mosselegali.RemoveAt(j);
-				
-				j--;
-			}
-		}
-
-	}
-	contatoreEND = Mosselegali.Num();
-
-	//
-	//
-	// se il contatore è maggiore di 0, significa che il pezzo ha mosse legali e non è sotto scacco
-	//
-	if (contatoreINI == contatoreEND)
-	{
-		return 1; //non è in scacco
-	}
-	else if (contatoreINI > contatoreEND)
-	{
-		return 2; //è in scacco
-	}
-	else if (contatoreEND <= 0 )
-	{
-		return 3; //è in scacco
-	}
-	else
-	{
-		return 3; //Scacco matto 
-	}
-
-
 }
