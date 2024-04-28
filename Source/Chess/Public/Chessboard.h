@@ -66,6 +66,9 @@ public:
 
 	std::vector<Mangiata> Mangiate;
 
+	bool mangiataped = false;
+
+
 
 	// Sets default values for this actor's properties
 	AChessboard();
@@ -150,6 +153,7 @@ public:
 	//metodo per resettare mosse legali
 	void ResetLegalMoves();
 
+	
 
 	
 	//Called when an instance of this class is placed (in editor) or spawned

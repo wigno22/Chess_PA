@@ -44,11 +44,6 @@ AChessboard::AChessboard()
 
 }
 
-
-
-
-
-
 bool AChessboard::InizializzaGioco()
 {
 	//cast di gamemode
@@ -67,7 +62,6 @@ bool AChessboard::InizializzaGioco()
 	return true;
 }
 
-
 bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef)
 {
 	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
@@ -75,9 +69,6 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef
 
 	ATile* TileMangiato = nullptr;
 	bool passa = false;
-	
-	
-
 
 	Mangiata PedinaMangiata{};
 
@@ -138,6 +129,7 @@ void AChessboard::ResetLegalMoves()
 		}
 	}
 }
+
 
 //funzione per eseguire la mossa, chiamata dopo aver controllato le validmoves
 void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlayer)
