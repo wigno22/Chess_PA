@@ -52,8 +52,8 @@ bool AChessboard::InizializzaGioco()
 	//resetto il campo
 	ResetField();
 
-	ChessGameMode->IsGameOver = false;
-
+	GameMode->ChoosePlayerAndStartGame();
+	GameMode->TurnNextPlayer(0, FVector2D(-1,-1));
 	GenerateField();
 	ClearScrollBox();
 	GameMode->IsGameOver = false;	
@@ -337,10 +337,6 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 
 	DoMove(PosInit, PosFin, OwnerPezzo);
 	GameMode->GField->Mosse[Mosse.Num() - 1].PosInit= GameMode->GField->Mosse[Mosse.Num() - 2].PosFin;
-	//GameMode->GField->Mosse[Mosse.Num()-2].PosInit = PosInit;
-	// aggiungo nella lista delle mosse la posizione -9,-9
-	//RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece(), OwnerPezzo);
-
 	
 
 	PosFin.X = x;
@@ -358,7 +354,10 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 
 
 	// sistemo attributi della tile iniziale e finale 
+	Mangiate.empty();
 	
+
+
 	(*TileMap.Find(PosInit))->Piece = nullptr;
 
 	
@@ -544,7 +543,7 @@ void AChessboard::ResetField()
 
 	for (int32 j = 7; j >= 0; j--)
 	{
-		for (int32 k = 9; k < 14; k++)
+		for (int32 k = 9; k < 15; k++)
 		{
 			if ((*TileMap.Find(FVector2D(j, k)))->GetPiece() != nullptr)
 			{
