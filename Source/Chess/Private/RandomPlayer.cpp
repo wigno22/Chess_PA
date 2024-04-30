@@ -39,24 +39,6 @@ void ARandomPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 }
 
-// Funzione che restituisce tutte le mosse possibili del giocatore 
-/*
-TMap<APiece*, TArray<FVector2D>> ARandomPlayer::MossePossibiliGioc(int32 Player)
-{
-
-	AChessGameMode* GameMode = Cast<AChessGameMode>(GetWorld()->GetAuthGameMode());
-	
-	// Aggiungi l'oggetto appena creato all'array Mosse
-	
-	RilevaPezzi(Player);
-	
-	for (APiece* Piece : PezziAI)
-	{
-		TArray<FVector2D> Mosselegali = Piece->CalculateMoves(Piece->GetTile());
-		MappaPezzi.Add(Piece, Mosselegali);
-	}
-	return MappaPezzi;
-}*/
 
 void ARandomPlayer::GiocatoreAI(int32 Player, FVector2D Mossa)
 {
@@ -134,8 +116,7 @@ TMap <APiece*, TArray<FVector2D>> ARandomPlayer::MossePossibiliGioc(int32 Player
 		MappaPezzi.Add(Piece, MosselegaliPedina);
 		++it;
 	}
-	//SISTEMARE SCACCO MATTO NERO
-	 // se in mappapezzi non ho mosse legali, il giocatore è in scacco matto
+	// se in mappapezzi non ho mosse legali, il giocatore è in scacco matto
 	if (MosseTotaliBlack.Num() == 0)
 	{
 		GameInstance->SetTurnMessage(TEXT("Scacco Matto!"));
@@ -169,18 +150,30 @@ void ARandomPlayer::SimulaMosse(int32 Player)
 	for (auto& Pair:MappaPezzi)
 	{
 		
+		//svuo l'array delle mosse legali
+		Mosselegali.Empty();
+
+		GameMode->GField->ResetLegalMoves();
+
 		APiece* Pezzotemp = Pair.Key;
 		 Mosselegali = Pair.Value;
+		 
 		
 
-		Mosselegali = Pezzotemp->CalculateMoves(Pezzotemp->GetTile());
+		Mosselegali = MappaPezzi[Pezzotemp];
 		GameMode->GField->TileAttiva = Pezzotemp->GetTile()->GetGridPosition();
 		ATile* CurrTile = Pezzotemp->GetTile();
 
-		if (GameMode->GField->ColorLegalMoves(Mosselegali, CurrTile))
+
+
+		if (Pezzotemp != nullptr && CurrTile->GetPiece() != nullptr && CurrTile->GetTileOwner() == GameMode->CurrentPlayer)
 		{
-			TrovataMossa = true;
+			if (GameMode->GField->ColorLegalMoves(Mosselegali, CurrTile))
+			{
+				TrovataMossa = true;
+			}
 		}
+		
 	}
 
 	FVector2D MossaINI = FVector2D(-1, -1);
@@ -306,7 +299,7 @@ void ARandomPlayer::SimulaMosse(int32 Player)
 	}
 
 	
-
+	V_scacco = false;
 	GameMode->GField->ResetLegalMoves();
 	GameMode->CurrentPlayer = 0;
 	

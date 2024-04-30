@@ -10,10 +10,6 @@
  
 void UChessWidget::RemoveMossa(int32 ID)
 {
-	//devo rimuovere la mossa con ID corrispondente
-	//devo rimuovere il bottone corrispondente
-	//devo rimuovere il testo
-
 	ScrollBox->RemoveChildAt(ID);
 }
 

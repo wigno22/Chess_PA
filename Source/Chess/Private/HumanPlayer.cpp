@@ -148,7 +148,7 @@ bool AHumanPlayer::ControlloMossaScacco(FVector2D TileArrivo, int32 Giocatore)
 		if (RandomPlayer->SimulaControMossa(RePosition))
 
 		{
-			GameInstance->SetTurnMessage(TEXT("La tua ultima mossa ti mette in scacco!"));
+			GameInstance->SetTurnMessage(TEXT("Scacco!"));
 			V_scacco = true;
 		}
 		

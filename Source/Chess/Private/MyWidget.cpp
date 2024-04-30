@@ -91,7 +91,7 @@ void UMyWidget::SetData(FString nome, FVector2D PosFin, int32 num, int32 OwnerPe
 	Text->SetOpacity(1);
 	Text->SetColorAndOpacity(FLinearColor::White);
 	
-	if ((OwnerPed == 0 && PosFin.Y <= 7 || OwnerPed == 1 && PosFin.Y  > 7) && !Blocca)
+	if ((OwnerPed == 0 && PosFin.Y <= 7 || OwnerPed == 1 && PosFin.Y  > 7) && !Blocca )
 	{
 	 
 		Text->SetColorAndOpacity(FLinearColor::Black);
@@ -101,7 +101,15 @@ void UMyWidget::SetData(FString nome, FVector2D PosFin, int32 num, int32 OwnerPe
 
 	}
 	
-	
+	if (PosFin.Y > 7)
+	{
+		Text->SetColorAndOpacity(FLinearColor::Black);
+		FLinearColor REDcolor = FLinearColor::Red;
+		// Imposta il colore di sfondo del bottone
+		Button->SetBackgroundColor(REDcolor);
+	}
+
+
 
 
 	Button->OnClicked.AddDynamic(this, &UMyWidget::HandleButtonClick);

@@ -86,18 +86,20 @@ bool  AChessboard::ColorLegalMoves(TArray<FVector2D> MosseLegali, ATile* TileDef
 
 			TileMangiato->StaticMeshComponent->SetMaterial(0, RedMaterial);
 			
-			
+			if (TileDef->GetPiece() != nullptr)
+			{
+
 				PedinaMangiata.PosPezzoMangiante = TileDef->GetGridPosition();
 				PedinaMangiata.PosPezzoMangiato = MosseLegali[i];
 				PedinaMangiata.PezzoMangiante = TileDef->GetPiece();
-				PedinaMangiata.PesoMangiante = TileDef->GetPiece()->GetWeight();
+				PedinaMangiata.PesoMangiante = PedinaMangiata.PezzoMangiante->Weight;
 				PedinaMangiata.PezzoMangiato = TileMangiato->GetPiece();
 				PedinaMangiata.PesoMangiato = TileMangiato->GetPiece()->GetWeight();
 				PedinaMangiata.Player = GameMode->CurrentPlayer;
-
+				
 				//aggiorno array che tiene conto delle pedine mangiate
 				Mangiate.push_back(PedinaMangiata);
-						
+			}
 				//ResetLegalMoves();
 				passa = true;
 			
@@ -177,7 +179,7 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 
 		if (GloXC < 0)
 		{
-			GloYC = 9;
+			GloYC = 10;
 			GloXC = 7;
 		}
 		FVector Position = AChessboard::GetRelativeLocationByXYPosition(GloXC, GloYC);
@@ -432,6 +434,9 @@ void AChessboard::RegistraMosse(FVector2D PosInit, FVector2D PosFin, APiece* Pie
 	FString NomePezzo = Piece->GetName();
 	
 	bool Blocca = false;
+
+
+
 	if (Mosse.Num() - 1 >= 0)
 	{
 		if (Mosse[Mosse.Num() - 1].PosFin.Y > 7)
@@ -550,11 +555,13 @@ void AChessboard::ResetField()
 	TileMap.Empty();
 	Mosse.Empty();
 	Mangiate.clear();
+
 	 GloXC = 7;
 	 GloYC = 9;
 
 	 GloXG = 7;
 	 GloYG = 11;
+
 
 	
 
@@ -789,30 +796,25 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 	{
 		PieceObj = CreaTorre(0, Position, y);
 	}
-	
 	else if (x == 7 && (y == 0 || y == 7))
 	{
 		PieceObj = CreaTorre(1, Position, y);
 		BW = 1;
 	}
-	
+
 
 	else if (x == 0 && (y == 2 || y == 5))
 	{
 
 		PieceObj = CreaAlfiere(0, Position, y);
 	}
-	
 	else if (x == 7 && (y == 2 || y == 5))
 	{
 		PieceObj = CreaAlfiere(1, Position, y);
 		BW = 1;
 	}
-	
 
-	if (PieceObj != nullptr)
-	{
-	
+
 	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));
 	PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 	PieceObj->SetGridPosition(x, y);
@@ -825,7 +827,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 	(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(BW, ETileStatus::OCCUPIED);
 	(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
-	}
+
 }
 
 APiece* AChessboard::CreaCavallo(int32 Colore, FVector Position, int32 y)

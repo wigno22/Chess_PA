@@ -58,11 +58,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//virtual void OnTurn() override;
-	//virtual void OnWin() override;
-	//virtual void OnLose() override;
-
-
 	TMap<APiece*, TArray<FVector2D>> MossePossibiliGioc(int32 Player);
 
 	void GiocatoreAI(int32 Player,FVector2D Mossa);
