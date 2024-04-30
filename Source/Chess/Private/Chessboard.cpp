@@ -224,8 +224,9 @@ void AChessboard:: DoMove(FVector2D PosInit, FVector2D PosFin, int32 CurrentPlay
 			Piece = PromozionePedReg(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
 			
 		}
-		else if ((*TileMap.Find(PosInit))->GetTileOwner() == 0 && PosFin.X == 7)
+		else if ((*TileMap.Find(PosInit))->GetTileOwner() == 0 && PosFin.X == 7 && PosFin.Y < 8)
 		{
+
 			Piece = PromozionePedReg(PosInit, PosFin, (*TileMap.Find(PosInit))->GetPiece());
 			
 		}
@@ -369,7 +370,8 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 		newName = "REGINA_B" + std::to_string(static_cast<int>(FMath::RandRange(0, 10000)));
 		
 	}
-	else {
+	else 
+	{
 		 
 		PieceObj = CreaRegina(0, Position);
 		newName = "REGINA_W" + std::to_string(static_cast<int>(FMath::RandRange(0, 10000)));
@@ -401,15 +403,17 @@ APiece* AChessboard::PromozionePedReg(FVector2D PosInit, FVector2D PosFin, APiec
 	{
 		PosInit.X = GloXCQ;
 		GloXCQ--;
+		PosInit.Y = GloYCQ;
 	}
 	else
 	{
 		PosInit.X = GloXGQ;
 		GloXGQ--;
+		PosInit.Y = GloYGQ;
 	}
 
 	
-	PosInit.Y = GloYCQ;
+	
 	RegistraMosse(PosInit, PosFin, (*TileMap.Find(PosFin))->GetPiece(), OwnerPezzo);
 	//RigeneraTileArray();
 
@@ -786,12 +790,13 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 		PieceObj = CreaPedone(0, Position);
 	}
+	
 	else if (x == 6)
 	{
 		PieceObj = CreaPedone(1, Position);
 		BW = 1;
 	}
-
+	
 	else if (x == 0 && (y == 0 || y == 7))
 	{
 		PieceObj = CreaTorre(0, Position, y);
@@ -813,12 +818,16 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 		PieceObj = CreaAlfiere(1, Position, y);
 		BW = 1;
 	}
+	
 
 
 	ATile* Tile = (*TileMap.Find(FVector2D(x, y)));
+
 	PieceObj->SetActorScale3D(FVector(PawnScale, PawnScale, 0.2));
 	PieceObj->SetGridPosition(x, y);
 	PieceObj->SetCurrentTile(Tile);
+	
+	
 
 	// Applica la rotazione dopo che l'oggetto è stato creato con successo
 	FRotator Rotation = FRotator(0, 90, 0); // 90 gradi lungo l'asse Z
@@ -827,7 +836,7 @@ void AChessboard::GeneratePiece(int32 x, int32 y)
 
 	(*TileMap.Find(FVector2D(x, y)))->SetTileStatus(BW, ETileStatus::OCCUPIED);
 	(*TileMap.Find(FVector2D(x, y)))->Piece = PieceObj;
-
+	
 }
 
 APiece* AChessboard::CreaCavallo(int32 Colore, FVector Position, int32 y)
